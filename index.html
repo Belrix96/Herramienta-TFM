@@ -276,13 +276,14 @@
         function renderDynamicGroupReports() {
             const container = document.getElementById('dynamicGroupReportsContainer');
             config.groups.forEach(g => {
-                if (!document.getElementById(`report-row-${g.id}`)) {
-                    const section = document.createElement('div');
+                let section = document.getElementById(`report-row-${g.id}`);
+                if (!section) {
+                    section = document.createElement('div');
                     section.id = `report-row-${g.id}`;
                     section.className = "bg-white p-6 rounded-3xl shadow-xl border border-slate-100 space-y-4";
                     section.innerHTML = `
                         <div class="flex justify-between items-center border-b pb-2">
-                            <h3 class="font-black text-slate-700 uppercase text-xs tracking-tight">${g.name}</h3>
+                            <h3 id="report-title-${g.id}" class="font-black text-slate-700 uppercase text-xs tracking-tight">${g.name}</h3>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div class="chart-container"><canvas id="chartGrpSum-${g.id}"></canvas></div>
@@ -291,6 +292,9 @@
                         </div>
                     `;
                     container.appendChild(section);
+                } else {
+                    // Aquí se actualiza el nombre del grupo para que quede reflejado en el título
+                    document.getElementById(`report-title-${g.id}`).innerText = g.name;
                 }
             });
             Array.from(container.children).forEach(c => { if (!config.groups.find(g => g.id === c.id.replace('report-row-',''))) c.remove(); });
