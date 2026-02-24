@@ -3,787 +3,480 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestor de Datos TFM - Versión 32 (Sit. Final)</title>
+    <title>Analytics Pro - v50 Impacto Global por Sexo</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js 4.4.1 -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-    <!-- Plugin DataLabels -->
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
-        .chart-container { position: relative; height: 250px; width: 100%; }
-        .tab-active { border-bottom: 3px solid #2563eb; color: #1e40af; background-color: #eff6ff; }
-        .tab-inactive { color: #6b7280; cursor: pointer; }
-        .tab-inactive:hover { background-color: #f9fafb; }
-        @media (max-width: 768px) { .input-item { width: 100%; } .chart-container { height: 200px; } }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; }
+        .chart-container { position: relative; height: 300px; width: 100%; }
+        .tab-active { border-bottom: 4px solid #2563eb; color: #1e40af; background-color: #eff6ff; font-weight: 800; }
+        .tab-inactive { color: #64748b; cursor: pointer; transition: all 0.2s; }
+        .group-card { border-left: 4px solid #e2e8f0; transition: all 0.2s; }
+        .group-card:hover { border-left-color: #3b82f6; background-color: #f1f5f9; }
+        .stat-bar { height: 8px; border-radius: 4px; background-color: #e2e8f0; overflow: hidden; }
+        .stat-fill { height: 100%; transition: width 0.5s ease-out; }
+        
+        /* Tablas profesionales */
+        .table-container { overflow-x: auto; border-radius: 1rem; border: 1px solid #e2e8f0; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th { background-color: #f8fafc; color: #64748b; text-transform: uppercase; font-size: 0.7rem; padding: 1rem; border-bottom: 2px solid #e2e8f0; }
+        td { padding: 1rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
     </style>
 </head>
-<body class="p-4 md:p-6 text-gray-800">
+<body class="p-4 md:p-8">
 
     <div class="max-w-7xl mx-auto">
         
-        <!-- Header -->
-        <div class="bg-white p-4 rounded-lg shadow-md mb-6 flex flex-col md:flex-row justify-between items-center border-l-4 border-indigo-600 gap-4">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                    📊 TFM Analytics
-                    <span class="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full">v32 Final</span>
-                </h1>
-                <p class="text-gray-500 text-sm">Incluye gráfica comparativa de Situación Final (Post-Test).</p>
+        <!-- CABECERA -->
+        <header class="bg-white p-6 rounded-2xl shadow-xl mb-8 border-b-4 border-blue-600 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="text-center md:text-left">
+                <h1 class="text-4xl font-black text-slate-900 tracking-tighter">ANALYTICS <span class="text-blue-600">PRO</span></h1>
+                <p class="text-slate-500 font-medium">v50 - Cruce Global de Sexo y Condición</p>
             </div>
-            <div class="flex flex-wrap gap-2 justify-center md:justify-end text-sm">
+            <div class="flex flex-wrap gap-3 justify-center">
                 <input type="file" id="fileInput" class="hidden" accept=".json" onchange="loadBackupFile(this)">
-                <button onclick="document.getElementById('fileInput').click()" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-2 rounded shadow flex items-center gap-1 transition-colors">📂 Cargar</button>
-                <button onclick="downloadBackup()" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded shadow flex items-center gap-1 transition-colors">💾 Backup</button>
-                <button onclick="exportToCSV()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded shadow flex items-center gap-1 transition-colors">📥 Excel</button>
+                <button onclick="document.getElementById('fileInput').click()" class="bg-amber-500 hover:bg-amber-600 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg transition-all active:scale-95">📂 Cargar Backup</button>
+                <button onclick="downloadBackup()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg transition-all active:scale-95">💾 Backup</button>
+                <button onclick="exportToCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg transition-all active:scale-95">📥 Excel</button>
             </div>
-        </div>
+        </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            <!-- COLUMNA IZQUIERDA: FORMULARIO -->
-            <div class="lg:col-span-1 bg-white rounded-lg shadow-md h-fit border-t-4 border-blue-600 overflow-hidden">
-                
-                <div class="flex border-b">
-                    <div onclick="switchTab('PRE')" id="tabPre" class="w-1/2 py-3 text-center font-bold tab-active transition-all">📝 PRE-TEST</div>
-                    <div onclick="switchTab('POST')" id="tabPost" class="w-1/2 py-3 text-center font-bold tab-inactive transition-all">🏁 POST-TEST</div>
-                </div>
+            <!-- PANEL DE ENTRADA -->
+            <div class="lg:col-span-4 space-y-8">
+                <!-- GESTOR DE GRUPOS -->
+                <section class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+                    <div class="bg-slate-800 p-4 flex justify-between items-center">
+                        <h2 class="text-white font-extrabold text-xs uppercase tracking-widest">👥 Grupos de Trabajo</h2>
+                    </div>
+                    <div class="p-4 space-y-3">
+                        <div id="groupList" class="space-y-2"></div>
+                        <button onclick="addNewGroup()" class="w-full py-3 bg-slate-50 hover:bg-blue-50 text-slate-600 hover:text-blue-600 rounded-xl text-xs font-black border-2 border-dashed border-slate-200 transition-all">+ NUEVO GRUPO</button>
+                    </div>
+                </section>
 
-                <div class="p-5">
-                    <h2 class="text-lg font-bold text-gray-800 mb-4 flex justify-between items-center">
-                        <span id="modeTitle">Datos Pre-Test</span>
-                    </h2>
-
-                    <!-- Campos Comunes -->
-                    <div class="grid grid-cols-2 gap-3 mb-4 p-3 bg-gray-50 rounded border">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-600 mb-1">CÓDIGO</label>
-                            <input type="text" id="codigo" placeholder="Ej: MAJU15" class="w-full border border-gray-300 rounded p-2 uppercase focus:ring-2 focus:ring-blue-500 outline-none font-mono font-bold" onblur="checkExistingStudent()">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-600 mb-1">GRUPO</label>
-                            <select id="grupo" class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                                <option value="Experimental">3ºB (Exper.)</option>
-                                <option value="Control">3ºA (Control)</option>
-                            </select>
-                        </div>
-                        <div class="demog-fields">
-                            <label class="block text-xs font-bold text-gray-600 mb-1">SEXO</label>
-                            <select id="sexo" class="w-full border border-gray-300 rounded p-2 text-sm"><option value="-">-</option><option value="M">Masc</option><option value="F">Fem</option></select>
-                        </div>
-                        <div class="demog-fields">
-                            <label class="block text-xs font-bold text-gray-600 mb-1">EDAD</label>
-                            <input type="number" id="edad" placeholder="14" class="w-full border border-gray-300 rounded p-2 text-sm">
-                        </div>
+                <!-- FORMULARIO -->
+                <section class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+                    <div class="flex border-b">
+                        <button onclick="switchTab('PRE')" id="tabPre" class="w-1/2 py-4 font-black transition-all tab-active">PRE-TEST</button>
+                        <button onclick="switchTab('POST')" id="tabPost" class="w-1/2 py-4 font-black transition-all tab-inactive">POST-TEST</button>
                     </div>
 
-                    <!-- SECCIÓN PRE -->
-                    <div id="sectionPre" class="block space-y-4">
-                        <div class="p-3 bg-gray-50 rounded border border-gray-200">
-                            <h3 class="text-xs font-bold text-gray-600 mb-2 uppercase">Bloque 0: Experiencia</h3>
+                    <div class="p-6 text-sm">
+                        <div class="space-y-4 mb-6">
+                            <div>
+                                <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Seleccionar Grupo</label>
+                                <select id="inputGrupo" class="w-full border-2 border-slate-100 rounded-xl p-3 bg-slate-50 font-bold focus:border-blue-500 outline-none" onchange="checkGroupType()"></select>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <input type="text" id="codigo" class="w-full border-2 border-slate-100 rounded-xl p-3 uppercase font-mono font-bold" placeholder="CODIGO" onblur="checkExistingStudent()">
+                                <select id="sexo" class="w-full border-2 border-slate-100 rounded-xl p-3 bg-white font-bold"><option value="M">Masc</option><option value="F">Fem</option></select>
+                            </div>
+                        </div>
+
+                        <!-- BLOQUES COMUNES -->
+                        <div id="sectionPreExp" class="p-4 bg-slate-50 rounded-2xl border border-slate-200 mb-6">
+                            <h3 class="text-[10px] font-black text-slate-600 uppercase mb-3">🧘 Bloque 0: Experiencia</h3>
+                            <select id="exp_si" class="w-full border rounded-lg p-2 text-xs font-bold mb-2"><option value="No">Sin experiencia</option><option value="Si">Con experiencia</option></select>
+                            <div class="grid grid-cols-2 gap-2">
+                                <select id="exp_freq" class="border rounded-lg p-2 text-[10px]"><option value="">Frecuencia...</option><option value="Pocas">Pocas veces</option><option value="Habitual">Habitual</option></select>
+                                <input type="text" id="exp_donde" class="border rounded-lg p-2 text-[10px]" placeholder="¿Dónde?">
+                            </div>
+                        </div>
+
+                        <div id="sectionPostVal" class="hidden p-4 bg-emerald-50 rounded-2xl border border-emerald-100 mb-6">
+                            <h3 class="text-[10px] font-black text-emerald-800 uppercase mb-3">⭐ Valoración</h3>
                             <div class="space-y-2">
-                                <div>
-                                    <label class="block text-[10px] text-gray-500">¿Has practicado antes?</label>
-                                    <select id="exp_sino" class="w-full border rounded p-1 text-sm"><option value="No">No</option><option value="Si">Sí</option></select>
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] text-gray-500">Frecuencia</label>
-                                    <select id="exp_freq" class="w-full border rounded p-1 text-sm"><option value="">-</option><option value="Pocas">Muy pocas veces</option><option value="A veces">A veces</option><option value="Habitual">Habitualmente</option></select>
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] text-gray-500">¿Dónde?</label>
-                                    <input type="text" id="exp_donde" placeholder="Ej: Colegio, App..." class="w-full border rounded p-1 text-sm">
-                                </div>
+                                <select id="val_ayuda" class="w-full border rounded p-1.5 text-xs"><option value="-">¿Ayuda?</option><option value="Si">Sí</option><option value="No">No</option></select>
+                                <input type="number" id="val_sentido" min="1" max="5" class="w-full border rounded p-1.5 text-xs" placeholder="Sensación (1-5)">
+                                <select id="val_foco" class="w-full border rounded p-1.5 text-xs"><option value="-">¿Concentración?</option><option value="Si">Sí</option><option value="No">No</option></select>
+                                <select id="val_repetir" class="w-full border rounded p-1.5 text-xs"><option value="-">¿Repetir?</option><option value="Si">Sí</option><option value="No">No</option></select>
                             </div>
                         </div>
-                        
-                        <div class="p-3 bg-red-50 rounded border border-red-100">
-                            <h3 class="text-xs font-bold text-red-800 mb-2 uppercase">Distractores</h3>
-                            <div class="grid grid-cols-2 gap-2 text-xs text-gray-700">
-                                <label class="flex items-center"><input type="checkbox" id="d_comp" class="mr-1">Compañeros</label>
-                                <label class="flex items-center"><input type="checkbox" id="d_ruido" class="mr-1">Ruido</label>
-                                <label class="flex items-center"><input type="checkbox" id="d_cans" class="mr-1">Cansancio</label>
-                                <label class="flex items-center"><input type="checkbox" id="d_preoc" class="mr-1">Preocup.</label>
-                                <label class="flex items-center"><input type="checkbox" id="d_aburr" class="mr-1">Aburrim.</label>
-                                <label class="flex items-center"><input type="checkbox" id="d_olor" class="mr-1">Mal Olor</label>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- SECCIÓN POST -->
-                    <div id="sectionPost" class="hidden space-y-4">
-                        <div id="blockVal" class="p-3 bg-green-50 rounded border border-green-200 hidden">
-                            <h3 class="text-xs font-bold text-green-800 mb-2 uppercase">Valoración (Solo Exp)</h3>
-                            <div class="space-y-2 text-xs">
-                                <div><label class="font-bold">1. ¿Te ha ayudado?</label><select id="val_ayuda" class="w-full border p-1 rounded"><option value="-">-</option><option value="No">No, nada</option><option value="Poco">Un poco</option><option value="Si">Sí, bastante</option></select></div>
-                                <div><label class="font-bold">2. Sensación (1-5)</label><input type="number" id="val_sentido" min="1" max="5" class="w-full border p-1 rounded"></div>
-                                <div><label class="font-bold">3. ¿Más fácil atender?</label><select id="val_facil" class="w-full border p-1 rounded"><option value="-">-</option><option value="No">No, igual</option><option value="Si">Sí, más concentrado</option></select></div>
-                                <div><label class="font-bold">4. ¿Repetir futuro?</label><select id="val_futuro" class="w-full border p-1 rounded"><option value="-">-</option><option value="Si">Sí</option><option value="No">No</option><option value="Igual">Me da igual</option></select></div>
+                        <div class="space-y-4">
+                            <div class="p-4 bg-blue-50 rounded-2xl border border-blue-100">
+                                <h3 class="text-[10px] font-black text-blue-800 uppercase mb-3 text-center">Ansiedad (1-4)</h3>
+                                <div class="grid grid-cols-5 gap-2">
+                                    <input type="number" id="a1" class="w-full border rounded-lg p-2 text-center" placeholder="1"><input type="number" id="a2" class="w-full border rounded-lg p-2 text-center" placeholder="2"><input type="number" id="a3" class="w-full border rounded-lg p-2 text-center" placeholder="3"><input type="number" id="a4" class="w-full border rounded-lg p-2 text-center" placeholder="4"><input type="number" id="a5" class="w-full border rounded-lg p-2 text-center" placeholder="5">
+                                    <input type="number" id="a6" class="w-full border rounded-lg p-2 text-center" placeholder="6"><input type="number" id="a7" class="w-full border rounded-lg p-2 text-center" placeholder="7"><input type="number" id="a8" class="w-full border rounded-lg p-2 text-center" placeholder="8"><input type="number" id="a9" class="w-full border rounded-lg p-2 text-center" placeholder="9"><input type="number" id="a10" class="w-full border rounded-lg p-2 text-center" placeholder="10">
+                                </div>
                             </div>
+                            <div class="p-4 bg-purple-50 rounded-2xl border border-purple-100">
+                                <h3 class="text-[10px] font-black text-purple-800 uppercase mb-3 text-center">Atención (1-5)</h3>
+                                <div class="grid grid-cols-5 gap-2">
+                                    <input type="number" id="at1" class="w-full border rounded-lg p-2 text-center" placeholder="1"><input type="number" id="at2" class="w-full border rounded-lg p-2 text-center" placeholder="2"><input type="number" id="at3" class="w-full border rounded-lg p-2 text-center" placeholder="3"><input type="number" id="at4" class="w-full border rounded-lg p-2 text-center" placeholder="4"><input type="number" id="at5" class="w-full border rounded-lg p-2 text-center" placeholder="5">
+                                </div>
+                            </div>
+                            <textarea id="observaciones" class="w-full border-2 border-slate-100 rounded-2xl p-4 text-xs h-16 bg-slate-50" placeholder="Notas..."></textarea>
                         </div>
-                        <div id="blockValMsg" class="text-xs text-gray-400 italic text-center p-2 border border-dashed rounded hidden">Grupo Control: No rellena valoración.</div>
-                    </div>
 
-                    <!-- CAMPOS COMUNES -->
-                    <div class="mt-4 space-y-3">
-                        <div class="p-2 bg-blue-50 rounded border border-blue-100">
-                            <h3 class="text-xs font-bold text-blue-800 mb-1 flex justify-between">
-                                <span>B1: Ansiedad (1-4)</span>
-                                <span class="opacity-50 text-[10px]">0 = No contesta</span>
-                            </h3>
-                            <div class="grid grid-cols-5 gap-1">
-                                <input type="number" id="a1" class="border text-center rounded text-sm py-1" placeholder="1"><input type="number" id="a2" class="border text-center rounded text-sm py-1" placeholder="2"><input type="number" id="a3" class="border text-center rounded text-sm py-1" placeholder="3"><input type="number" id="a4" class="border text-center rounded text-sm py-1" placeholder="4"><input type="number" id="a5" class="border text-center rounded text-sm py-1" placeholder="5">
-                                <input type="number" id="a6" class="border text-center rounded text-sm py-1" placeholder="6"><input type="number" id="a7" class="border text-center rounded text-sm py-1" placeholder="7"><input type="number" id="a8" class="border text-center rounded text-sm py-1" placeholder="8"><input type="number" id="a9" class="border text-center rounded text-sm py-1" placeholder="9"><input type="number" id="a10" class="border text-center rounded text-sm py-1" placeholder="10">
-                            </div>
+                        <div class="mt-8 flex gap-3">
+                            <button onclick="saveDataEntry()" class="flex-1 bg-blue-600 text-white font-black py-4 rounded-2xl shadow-xl uppercase text-sm">GUARDAR <span id="btnPhaseText">PRE</span></button>
+                            <button onclick="clearForm()" class="px-5 bg-slate-100 text-slate-500 rounded-2xl">✕</button>
                         </div>
-                        <div class="p-2 bg-purple-50 rounded border border-purple-100">
-                            <h3 class="text-xs font-bold text-purple-800 mb-1 flex justify-between">
-                                <span>B2: Atención (1-5)</span>
-                                <span class="opacity-50 text-[10px]">0 = No contesta</span>
-                            </h3>
-                            <div class="grid grid-cols-5 gap-1">
-                                <input type="number" id="at1" class="border text-center rounded text-sm py-1" placeholder="1"><input type="number" id="at2" class="border text-center rounded text-sm py-1" placeholder="2"><input type="number" id="at3" class="border text-center rounded text-sm py-1" placeholder="3"><input type="number" id="at4" class="border text-center rounded text-sm py-1" placeholder="4"><input type="number" id="at5" class="border text-center rounded text-sm py-1" placeholder="5">
-                            </div>
-                        </div>
-                        <textarea id="observaciones" class="w-full border rounded p-2 text-xs h-12 placeholder-gray-400 bg-yellow-50 border-yellow-100" placeholder="Observaciones..."></textarea>
+                        <p id="msg" class="text-center text-[11px] font-bold mt-4 h-4"></p>
                     </div>
-
-                    <div class="flex gap-2 mt-4">
-                        <button id="btnSave" onclick="saveDataEntry()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded shadow transition-colors flex justify-center items-center gap-2">💾 Guardar <span id="btnPhaseText">PRE</span></button>
-                        <button onclick="clearForm()" class="bg-gray-200 text-gray-600 px-3 rounded hover:bg-gray-300">Limpiar</button>
-                    </div>
-                    <p id="msg" class="text-center text-xs font-bold mt-2 h-4"></p>
-                </div>
+                </section>
             </div>
 
-            <!-- COLUMNA DERECHA: RESULTADOS -->
-            <div class="lg:col-span-2 space-y-6">
+            <!-- PANEL DE RESULTADOS -->
+            <div class="lg:col-span-8 space-y-12">
                 
-                <!-- 1. TABLAS DE ALUMNOS (DIVIDIDAS) -->
-                <div class="bg-white p-4 rounded-lg shadow-md border-t-4 border-gray-600">
-                    <div class="flex justify-between items-center mb-2">
-                        <h2 class="text-lg font-bold text-gray-800">Alumnos (<span id="count">0</span>)</h2>
-                        <button onclick="wipeAll()" class="text-xs text-red-500 hover:underline">Borrar Todo</button>
-                    </div>
-
-                    <!-- EXPERIMENTAL -->
-                    <h3 class="text-sm font-bold text-blue-800 bg-blue-50 p-2 rounded-t border border-blue-100 mt-2">Grupo Experimental (3ºB)</h3>
-                    <div class="overflow-x-auto border-x border-b rounded-b shadow-inner bg-gray-50 mb-4 max-h-60">
-                        <table class="min-w-full divide-y divide-gray-200 text-xs">
-                            <thead class="bg-gray-100 sticky top-0 z-10">
-                                <tr>
-                                    <th class="px-2 py-2 text-left">Cód</th>
-                                    <th class="px-2 py-2 text-center bg-blue-50">Ans(Pre)</th>
-                                    <th class="px-2 py-2 text-center bg-blue-100 font-bold">Ans(Post)</th>
-                                    <th class="px-2 py-2 text-center bg-purple-50">Atn(Pre)</th>
-                                    <th class="px-2 py-2 text-center bg-purple-100 font-bold">Atn(Post)</th>
-                                    <th class="px-2 py-2 text-center">Acción</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tableBodyExp" class="bg-white divide-y divide-gray-200"></tbody>
-                        </table>
-                    </div>
-
-                    <!-- CONTROL -->
-                    <h3 class="text-sm font-bold text-gray-700 bg-gray-100 p-2 rounded-t border border-gray-200 mt-2">Grupo Control (3ºA)</h3>
-                    <div class="overflow-x-auto border-x border-b rounded-b shadow-inner bg-gray-50 mb-4 max-h-60">
-                        <table class="min-w-full divide-y divide-gray-200 text-xs">
-                            <thead class="bg-gray-100 sticky top-0 z-10">
-                                <tr>
-                                    <th class="px-2 py-2 text-left">Cód</th>
-                                    <th class="px-2 py-2 text-center bg-blue-50">Ans(Pre)</th>
-                                    <th class="px-2 py-2 text-center bg-blue-100 font-bold">Ans(Post)</th>
-                                    <th class="px-2 py-2 text-center bg-purple-50">Atn(Pre)</th>
-                                    <th class="px-2 py-2 text-center bg-purple-100 font-bold">Atn(Post)</th>
-                                    <th class="px-2 py-2 text-center">Acción</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tableBodyCtrl" class="bg-white divide-y divide-gray-200"></tbody>
-                        </table>
+                <!-- 1. BLOQUE DE RESULTADOS TOTALES -->
+                <div class="space-y-6">
+                    <h2 class="text-sm font-black text-slate-400 uppercase tracking-[0.2em] text-center italic">1. Resultados Globales Muestra Total</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white p-6 rounded-2xl shadow-lg border-t-8 border-indigo-600"><div class="chart-container"><canvas id="chartGlobalAnsiedad"></canvas></div></div>
+                        <div class="bg-white p-6 rounded-2xl shadow-lg border-t-8 border-indigo-600"><div class="chart-container"><canvas id="chartGlobalAtencion"></canvas></div></div>
                     </div>
                 </div>
 
-                <!-- 2. REGISTRO DE OBSERVACIONES (SEPARADO) -->
-                <div class="bg-white p-4 rounded-lg shadow-md border-t-4 border-yellow-500">
-                    <h2 class="text-lg font-bold text-yellow-800 mb-2">Observaciones (Pre y Post)</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        <div>
-                            <h3 class="text-xs font-bold text-blue-800 bg-blue-50 p-1 rounded-t">PRE-TEST</h3>
-                            <div class="overflow-x-auto border rounded-b bg-white max-h-40"><table class="min-w-full divide-y text-xs"><tbody id="obsPreExp"></tbody></table></div>
-                            <div class="overflow-x-auto border rounded-b bg-white max-h-40 mt-1"><table class="min-w-full divide-y text-xs"><tbody id="obsPreCtrl"></tbody></table></div>
+                <!-- 2. BLOQUE DE RESULTADOS POR SEXO (CRUCE GLOBAL) -->
+                <div class="space-y-6">
+                    <h2 class="text-sm font-black text-slate-400 uppercase tracking-[0.2em] text-center italic">2. Cruce Global: Sexo y Condición</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white p-6 rounded-2xl shadow-lg border-t-8 border-rose-500">
+                            <div class="chart-container"><canvas id="chartGlobalSexAns"></canvas></div>
+                            <p class="text-[9px] text-center text-slate-400 mt-2 italic">Segmentación Global Ansiedad (STAIC)</p>
                         </div>
-                        <div>
-                            <h3 class="text-xs font-bold text-green-800 bg-green-50 p-1 rounded-t">POST-TEST</h3>
-                            <div class="overflow-x-auto border rounded-b bg-white max-h-40"><table class="min-w-full divide-y text-xs"><tbody id="obsPostExp"></tbody></table></div>
-                            <div class="overflow-x-auto border rounded-b bg-white max-h-40 mt-1"><table class="min-w-full divide-y text-xs"><tbody id="obsPostCtrl"></tbody></table></div>
+                        <div class="bg-white p-6 rounded-2xl shadow-lg border-t-8 border-blue-500">
+                            <div class="chart-container"><canvas id="chartGlobalSexAtt"></canvas></div>
+                            <p class="text-[9px] text-center text-slate-400 mt-2 italic">Segmentación Global Atención Percibida</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- 3. EXPERIENCIA PREVIA -->
-                <div class="bg-white p-4 rounded-lg shadow-md border-t-4 border-gray-500">
-                    <div class="flex justify-between items-center mb-2">
-                        <h2 class="text-lg font-bold text-gray-800">Experiencia Previa</h2>
-                        <div id="expSummary" class="text-xs bg-gray-100 px-3 py-1 rounded border font-mono"></div>
+                <!-- 3. REPORTES INDIVIDUALES POR AULA -->
+                <div class="space-y-6">
+                    <h2 class="text-sm font-black text-slate-400 uppercase tracking-[0.2em] text-center italic">3. Informes Detallados por Aula</h2>
+                    <div id="dynamicGroupReportsContainer" class="space-y-12"></div>
+                </div>
+
+                <!-- 4. VALORACIÓN CUALITATIVA -->
+                <section class="bg-white rounded-2xl shadow-lg border-t-8 border-emerald-500 overflow-hidden">
+                    <div class="p-4 bg-emerald-50 border-b flex justify-between items-center">
+                        <h2 class="font-black text-emerald-900 text-sm uppercase">Satisfacción (Muestra Experimental)</h2>
+                        <span id="valCount" class="bg-white px-3 py-1 rounded-full text-[10px] font-bold text-emerald-600 shadow-sm">0 respuestas</span>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        <div class="overflow-x-auto border rounded bg-white max-h-40"><table class="min-w-full divide-y text-xs"><tbody id="expTableBodyExp"></tbody></table></div>
-                        <div class="overflow-x-auto border rounded bg-white max-h-40"><table class="min-w-full divide-y text-xs"><tbody id="expTableBodyCtrl"></tbody></table></div>
-                    </div>
+                    <div id="satisfactionDetails" class="p-6"></div>
+                </section>
+
+                <!-- 5. TABLAS DE DATOS -->
+                <div id="dynamicTablesContainer" class="space-y-12"></div>
+
+                <!-- 6. OBSERVACIONES -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pb-20">
+                    <section class="bg-white rounded-2xl shadow-lg border-t-8 border-amber-400 flex flex-col">
+                        <div class="p-4 border-b font-black text-amber-900 text-xs">📝 OBSERVACIONES PRE</div>
+                        <div id="obsContainerPre" class="p-4 space-y-3 max-h-80 overflow-y-auto text-xs"></div>
+                    </section>
+                    <section class="bg-white rounded-2xl shadow-lg border-t-8 border-emerald-400 flex flex-col">
+                        <div class="p-4 border-b font-black text-emerald-900 text-xs">🏁 OBSERVACIONES POST</div>
+                        <div id="obsContainerPost" class="p-4 space-y-3 max-h-80 overflow-y-auto text-xs"></div>
+                    </section>
                 </div>
-
-                <!-- 4. VALORACIÓN -->
-                <div class="bg-white p-4 rounded-lg shadow-md border-t-4 border-green-500">
-                    <h2 class="text-lg font-bold text-green-800 mb-2">Valoración Post-Test (Experimental)</h2>
-                    <div class="overflow-x-auto"><table class="min-w-full text-xs divide-y border"><tbody id="valTableBody"></tbody></table></div>
-                </div>
-
-                <!-- GRÁFICAS -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- EVOLUCIÓN (COMPARATIVAS PRE vs POST) -->
-                    <div class="bg-white p-3 rounded shadow border"><div class="chart-container"><canvas id="chartCompAnsiedad"></canvas></div></div>
-                    <div class="bg-white p-3 rounded shadow border"><div class="chart-container"><canvas id="chartCompAtencion"></canvas></div></div>
-                    
-                    <!-- SITUACIÓN INICIAL vs FINAL -->
-                    <div class="bg-white p-3 rounded shadow border"><div class="chart-container"><canvas id="chartInitialBar"></canvas></div></div>
-                    <div class="bg-white p-3 rounded shadow border"><div class="chart-container"><canvas id="chartFinalBar"></canvas></div></div>
-
-                    <!-- SEXO (Full Width) -->
-                    <div class="bg-white p-3 rounded shadow border md:col-span-2"><div class="chart-container"><canvas id="chartSexoAnsiedad"></canvas></div></div>
-                    <div class="bg-white p-3 rounded shadow border md:col-span-2"><div class="chart-container"><canvas id="chartSexoAtencion"></canvas></div></div>
-                    
-                    <!-- OTROS -->
-                    <div class="bg-white p-3 rounded shadow border md:col-span-2"><div class="chart-container"><canvas id="chartDistractores"></canvas></div></div>
-                </div>
-
             </div>
         </div>
     </div>
 
     <script>
+        // --- ESTADO Y CONFIGURACIÓN ---
+        let config = { groups: [{ id: 'g1', name: 'Grupo Experimental', type: 'Experimental' }, { id: 'g2', name: 'Grupo Control', type: 'Control' }] };
         let students = [];
         let currentPhase = 'PRE';
-        let charts = {};
+        let charts = { fixed: {}, groups: {} };
 
-        function customRound(num) {
-            if (typeof num !== 'number' || isNaN(num)) return 0;
-            let scaled = num * 100;
-            let integerPart = Math.floor(scaled);
-            let fractionalPart = scaled - integerPart;
-            let result = fractionalPart > 0.50000001 ? (integerPart + 1) / 100 : integerPart / 100;
-            return parseFloat(result.toFixed(2));
-        }
-
-        function fmt(num) {
-            return customRound(num).toFixed(2).replace('.', ',');
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', () => {
             if (typeof ChartDataLabels !== 'undefined') Chart.register(ChartDataLabels);
-            loadData(); 
-            try { if (typeof Chart !== 'undefined') { initCharts(); updateCharts(); } } catch (e) { console.error(e); }
-            render();
+            loadData(); renderAll();
         });
 
-        function switchTab(phase) {
-            currentPhase = phase;
-            document.getElementById('tabPre').className = phase === 'PRE' ? 'w-1/2 py-3 text-center font-bold tab-active' : 'w-1/2 py-3 text-center font-bold tab-inactive';
-            document.getElementById('tabPost').className = phase === 'POST' ? 'w-1/2 py-3 text-center font-bold tab-active' : 'w-1/2 py-3 text-center font-bold tab-inactive';
-            
-            document.getElementById('sectionPre').classList.toggle('hidden', phase !== 'PRE');
-            document.getElementById('sectionPost').classList.toggle('hidden', phase !== 'POST');
-            document.querySelectorAll('.demog-fields').forEach(el => el.style.display = phase === 'PRE' ? 'block' : 'none');
-            
-            document.getElementById('modeTitle').innerText = phase === 'PRE' ? 'Datos Pre-Test' : 'Datos Post-Test';
-            document.getElementById('btnPhaseText').innerText = phase;
-            checkGroupVisibility();
-        }
+        // --- GESTIÓN DE GRUPOS ---
+        function addNewGroup() { const id = 'g' + Date.now(); config.groups.push({ id, name: 'Nuevo Grupo', type: 'Experimental' }); saveData(); renderAll(); }
+        function deleteGroup(id) { if (config.groups.length <= 1) return; if (confirm("¿Borrar grupo?")) { config.groups = config.groups.filter(g => g.id !== id); saveData(); renderAll(); } }
+        function updateGroup(id) { const el = document.querySelector(`[data-group-id="${id}"]`); const name = el.querySelector('.gn-input').value; const type = el.querySelector('.gt-select').value; const g = config.groups.find(x => x.id === id); if (g) { g.name = name; g.type = type; saveData(); renderAll(); } }
 
-        document.getElementById('grupo').addEventListener('change', checkGroupVisibility);
-        function checkGroupVisibility() {
-            const grp = document.getElementById('grupo').value;
-            if (currentPhase === 'POST') {
-                if (grp === 'Experimental') {
-                    document.getElementById('blockVal').classList.remove('hidden');
-                    document.getElementById('blockValMsg').classList.add('hidden');
-                } else {
-                    document.getElementById('blockVal').classList.add('hidden');
-                    document.getElementById('blockValMsg').classList.remove('hidden');
-                }
-            }
-        }
-
-        function checkExistingStudent() {
-            const code = document.getElementById('codigo').value.toUpperCase().trim();
-            if(!code) return;
-            const existing = students.find(s => s.codigo === code);
-            if (existing) {
-                document.getElementById('grupo').value = existing.grupo;
-                document.getElementById('sexo').value = existing.sexo;
-                document.getElementById('edad').value = existing.edad;
-                showMessage(`Alumno ${code} encontrado.`, 'text-blue-600');
-            }
-        }
-
-        // LÓGICA DE CALCULO PROPORCIONAL
+        // --- LÓGICA DE DATOS ---
         function saveDataEntry() {
             const code = document.getElementById('codigo').value.toUpperCase().trim();
-            if (!code) return showMessage('❌ Falta el Código', 'text-red-600');
-
-            const rawAns = [];
-            for(let i=1; i<=10; i++) rawAns.push(parseInt(document.getElementById('a'+i).value) || 0); // 0 si vacío
-            const rawAtt = [];
-            for(let i=1; i<=5; i++) rawAtt.push(parseInt(document.getElementById('at'+i).value) || 0); // 0 si vacío
-
-            // --- CÁLCULO ANSIEDAD PROPORCIONAL ---
-            let sumAns = 0;
-            let countAns = 0;
-            const invIdx = [0, 3, 5, 7, 9];
-
-            rawAns.forEach((val, i) => {
-                if (val > 0) { 
-                    countAns++;
-                    if (invIdx.includes(i)) {
-                        sumAns += (5 - val);
-                    } else {
-                        sumAns += val;
-                    }
-                }
-            });
-
-            let totAns = countAns > 0 ? (sumAns / countAns) * 10 : 0;
-            totAns = customRound(totAns);
-
-            // --- CÁLCULO ATENCIÓN PROPORCIONAL ---
-            let sumAtt = 0;
-            let countAtt = 0;
-            rawAtt.forEach((val, i) => {
-                if (val > 0) {
-                    countAtt++;
-                    if (i === 4) {
-                        sumAtt += (6 - val);
-                    } else {
-                        sumAtt += val;
-                    }
-                }
-            });
-
-            let totAtt = countAtt > 0 ? (sumAtt / countAtt) * 5 : 0;
-            totAtt = customRound(totAtt);
-
-            let student = students.find(s => s.codigo === code);
-            if (!student) {
-                student = { 
-                    codigo: code, grupo: document.getElementById('grupo').value, 
-                    sexo: document.getElementById('sexo').value, edad: document.getElementById('edad').value, 
-                    pre: null, post: null 
-                };
-                students.push(student);
-            } else {
-                if(currentPhase === 'PRE') {
-                    student.grupo = document.getElementById('grupo').value;
-                    student.sexo = document.getElementById('sexo').value;
-                    student.edad = document.getElementById('edad').value;
-                }
-            }
-
-            const obs = document.getElementById('observaciones').value.replace(/[\r\n,]/g, ' ').trim();
-
+            const groupId = document.getElementById('inputGrupo').value;
+            if (!code) return showMsg("Código requerido", "text-red-500");
+            const rawAns = Array.from({length:10}, (_,i) => parseInt(document.getElementById('a'+(i+1)).value) || 0);
+            const rawAtt = Array.from({length:5}, (_,i) => parseInt(document.getElementById('at'+(i+1)).value) || 0);
+            const calc = (vals, invIdx, maxVal) => {
+                let sum = 0, count = 0;
+                vals.forEach((v, i) => { if (v > 0) { count++; sum += invIdx.includes(i) ? (maxVal + 1 - v) : v; } });
+                return count > 0 ? parseFloat(((sum / count) * vals.length).toFixed(2)) : 0;
+            };
+            const ansScore = calc(rawAns, [0,3,5,7,9], 4);
+            const attScore = calc(rawAtt, [4], 5);
+            let s = students.find(x => x.codigo === code);
+            if (!s) {
+                s = { codigo: code, groupId, sexo: document.getElementById('sexo').value, pre: null, post: null };
+                students.push(s);
+            } else if (currentPhase === 'PRE') { s.groupId = groupId; s.sexo = document.getElementById('sexo').value; }
+            const obs = document.getElementById('observaciones').value.trim();
             if (currentPhase === 'PRE') {
-                student.pre = {
-                    ans: totAns, att: totAtt, rawAns, rawAtt, obs,
-                    exp: { si: document.getElementById('exp_sino').value, freq: document.getElementById('exp_freq').value, donde: document.getElementById('exp_donde').value },
-                    dist: {
-                        comp: document.getElementById('d_comp').checked, ruido: document.getElementById('d_ruido').checked,
-                        cans: document.getElementById('d_cans').checked, preoc: document.getElementById('d_preoc').checked,
-                        aburr: document.getElementById('d_aburr').checked, olor: document.getElementById('d_olor').checked
-                    }
-                };
+                s.pre = { ans: ansScore, att: attScore, obs, rawAns, rawAtt, exp: { si: document.getElementById('exp_si').value, freq: document.getElementById('exp_freq').value, donde: document.getElementById('exp_donde').value } };
             } else {
-                student.post = {
-                    ans: totAns, att: totAtt, rawAns, rawAtt, obs,
-                    val: {
-                        ayuda: document.getElementById('val_ayuda').value,
-                        sentido: parseInt(document.getElementById('val_sentido').value) || 0,
-                        facil: document.getElementById('val_facil').value,
-                        futuro: document.getElementById('val_futuro').value
-                    }
-                };
+                s.post = { ans: ansScore, att: attScore, obs, rawAns, rawAtt, val: { ayuda: document.getElementById('val_ayuda').value, sentido: parseInt(document.getElementById('val_sentido').value) || 0, foco: document.getElementById('val_foco').value, repetir: document.getElementById('val_repetir').value } };
+            }
+            saveData(); renderAll(); clearForm(); showMsg("✔ Guardado", "text-green-600");
+        }
+
+        // --- RENDERIZADO DOM ---
+        function renderAll() { 
+            renderGroups(); 
+            renderInputSelect(); 
+            renderTables(); 
+            renderObservations(); 
+            renderSatisfaction(); 
+            renderDynamicGroupReports(); 
+            initCharts(); 
+            updateChartsData(); 
+        }
+
+        function renderGroups() {
+            const list = document.getElementById('groupList');
+            list.innerHTML = config.groups.map(g => `
+                <div class="group-card flex items-center gap-2 p-2 bg-slate-50 rounded-xl border border-slate-100" data-group-id="${g.id}">
+                    <input type="text" value="${g.name}" class="gn-input flex-1 bg-transparent font-bold text-[11px] outline-none focus:text-blue-600">
+                    <select class="gt-select text-[10px] bg-white border rounded font-bold px-1">
+                        <option value="Experimental" ${g.type === 'Experimental' ? 'selected' : ''}>EXP</option>
+                        <option value="Control" ${g.type === 'Control' ? 'selected' : ''}>CTRL</option>
+                    </select>
+                    <button onclick="updateGroup('${g.id}')" class="text-blue-500 hover:bg-blue-50 p-1 rounded-lg">💾</button>
+                    <button onclick="deleteGroup('${g.id}')" class="text-slate-300 hover:text-red-500 p-1 rounded-lg">✕</button>
+                </div>`).join('');
+        }
+
+        function renderInputSelect() {
+            const sel = document.getElementById('inputGrupo'); const cur = sel.value;
+            sel.innerHTML = config.groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+            if (cur && config.groups.some(g => g.id === cur)) sel.value = cur;
+        }
+
+        function renderDynamicGroupReports() {
+            const container = document.getElementById('dynamicGroupReportsContainer');
+            config.groups.forEach(g => {
+                if (!document.getElementById(`report-row-${g.id}`)) {
+                    const section = document.createElement('div');
+                    section.id = `report-row-${g.id}`;
+                    section.className = "bg-white p-6 rounded-3xl shadow-xl border border-slate-100 space-y-4";
+                    section.innerHTML = `
+                        <div class="flex justify-between items-center border-b pb-2">
+                            <h3 class="font-black text-slate-700 uppercase text-xs tracking-tight">${g.name}</h3>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="chart-container"><canvas id="chartGrpSum-${g.id}"></canvas></div>
+                            <div class="chart-container"><canvas id="chartGrpAnsSex-${g.id}"></canvas></div>
+                            <div class="chart-container"><canvas id="chartGrpAttSex-${g.id}"></canvas></div>
+                        </div>
+                    `;
+                    container.appendChild(section);
+                }
+            });
+            Array.from(container.children).forEach(c => { if (!config.groups.find(g => g.id === c.id.replace('report-row-',''))) c.remove(); });
+        }
+
+        function renderSatisfaction() {
+            const container = document.getElementById('satisfactionDetails');
+            const expStudents = students.filter(s => {
+                const g = config.groups.find(x => x.id === s.groupId);
+                return g && g.type === 'Experimental' && s.post && s.post.val;
+            });
+
+            document.getElementById('valCount').innerText = `${expStudents.length} respuestas`;
+
+            if (expStudents.length === 0) {
+                container.innerHTML = '<p class="text-center text-slate-400 italic text-xs py-10">Esperando datos post-test...</p>';
+                return;
             }
 
-            saveToLocal(); render(); clearForm();
-            showMessage(`✔ ${currentPhase} guardado para ${code}`, 'text-green-600');
-        }
+            const stats = {
+                ayuda: { Si: 0, Poco: 0, No: 0 },
+                foco: { Si: 0, Poco: 0, No: 0 },
+                repetir: { Si: 0, No: 0, Igual: 0 },
+                sentido: [0, 0, 0, 0, 0] 
+            };
 
-        function render() {
-            // Limpiar TBODIES
-            document.getElementById('tableBodyExp').innerHTML = '';
-            document.getElementById('tableBodyCtrl').innerHTML = '';
-
-            students.slice().reverse().forEach(s => {
-                const preAns = s.pre ? fmt(s.pre.ans) : '-';
-                const postAns = s.post ? `<b>${fmt(s.post.ans)}</b>` : '-';
-                const preAtt = s.pre ? fmt(s.pre.att) : '-';
-                const postAtt = s.post ? `<b>${fmt(s.post.att)}</b>` : '-';
-                let ansColor = '', attColor = '';
-                if(s.pre && s.post) {
-                    if(s.post.ans < s.pre.ans) ansColor = 'text-green-600 font-bold';
-                    if(s.post.att > s.pre.att) attColor = 'text-green-600 font-bold';
-                }
-
-                const row = `
-                    <tr class="hover:bg-gray-50 border-b">
-                        <td class="px-2 py-2 font-mono font-bold text-xs">${s.codigo}</td>
-                        <td class="px-2 py-2 text-center text-xs text-gray-500">${preAns}</td>
-                        <td class="px-2 py-2 text-center text-xs ${ansColor}">${postAns}</td>
-                        <td class="px-2 py-2 text-center text-xs text-gray-500">${preAtt}</td>
-                        <td class="px-2 py-2 text-center text-xs ${attColor}">${postAtt}</td>
-                        <td class="px-2 py-2 text-center">
-                            <button onclick="editStudent('${s.codigo}')" class="text-blue-500 font-bold px-1" title="Editar">✎</button>
-                            <button onclick="delStudent('${s.codigo}')" class="text-red-500 font-bold px-1" title="Borrar">✕</button>
-                        </td>
-                    </tr>
-                `;
-
-                if (s.grupo === 'Experimental') {
-                    document.getElementById('tableBodyExp').innerHTML += row;
-                } else {
-                    document.getElementById('tableBodyCtrl').innerHTML += row;
-                }
-            });
-            document.getElementById('count').innerText = students.length;
-            
-            updateExpTable();
-            updateObsTable(); 
-            updateValTable();
-            updateCharts();
-        }
-
-        // --- UPDATE EXP TABLE: FILTRADO Y DIVIDIDO ---
-        function updateExpTable() {
-            const tbodyExp = document.getElementById('expTableBodyExp');
-            const tbodyCtrl = document.getElementById('expTableBodyCtrl');
-            const summaryDiv = document.getElementById('expSummary');
-            tbodyExp.innerHTML = '';
-            tbodyCtrl.innerHTML = '';
-            let countSi = 0, countNo = 0;
-
-            students.forEach(s => {
-                if (s.pre) {
-                    const expSiNo = s.pre.exp.si;
-                    if(expSiNo === 'Si') {
-                        countSi++; 
-                        const expClass = 'text-green-600 font-bold';
-                        const row = `
-                            <tr class="border-b hover:bg-gray-50">
-                                <td class="px-2 py-1 font-mono text-xs">${s.codigo}</td>
-                                <td class="px-2 py-1 text-xs ${expClass}">${expSiNo}</td>
-                                <td class="px-2 py-1 text-xs text-gray-600">${s.pre.exp.freq || '-'}</td>
-                                <td class="px-2 py-1 text-xs text-gray-600 italic truncate max-w-[150px]">${s.pre.exp.donde || '-'}</td>
-                            </tr>`;
-                        
-                        if (s.grupo === 'Experimental') tbodyExp.innerHTML += row;
-                        else tbodyCtrl.innerHTML += row;
-                    } else {
-                        countNo++;
-                    }
-                }
-            });
-            
-            if (tbodyExp.innerHTML === '') tbodyExp.innerHTML = '<tr><td colspan="4" class="px-2 py-1 text-center text-gray-400 text-xs">Ninguno.</td></tr>';
-            if (tbodyCtrl.innerHTML === '') tbodyCtrl.innerHTML = '<tr><td colspan="4" class="px-2 py-1 text-center text-gray-400 text-xs">Ninguno.</td></tr>';
-            
-            summaryDiv.innerHTML = `<span class="text-green-700 font-bold mr-3">Sí: ${countSi}</span><span class="text-gray-500 font-bold">No: ${countNo}</span>`;
-        }
-
-        // --- UPDATE OBS TABLE: SEPARADO POR FASES ---
-        function updateObsTable() {
-            const preExp = document.getElementById('obsPreExp');
-            const preCtrl = document.getElementById('obsPreCtrl');
-            const postExp = document.getElementById('obsPostExp');
-            const postCtrl = document.getElementById('obsPostCtrl');
-
-            preExp.innerHTML = ''; preCtrl.innerHTML = '';
-            postExp.innerHTML = ''; postCtrl.innerHTML = '';
-            
-            let hasPreExp=false, hasPreCtrl=false, hasPostExp=false, hasPostCtrl=false;
-
-            students.forEach(s => {
-                // OBS PRE
-                if (s.pre && s.pre.obs && s.pre.obs.trim() !== "") {
-                    const row = `
-                        <tr class="border-b hover:bg-gray-50">
-                            <td class="px-2 py-1 font-mono text-xs text-gray-700 font-bold w-16 align-top">${s.codigo}</td>
-                            <td class="px-2 py-1 text-xs text-gray-800 italic">"${s.pre.obs}"</td>
-                        </tr>`;
-                    if (s.grupo === 'Experimental') { preExp.innerHTML += row; hasPreExp=true; }
-                    else { preCtrl.innerHTML += row; hasPreCtrl=true; }
-                }
-                
-                // OBS POST
-                if (s.post && s.post.obs && s.post.obs.trim() !== "") {
-                    const row = `
-                        <tr class="border-b hover:bg-gray-50">
-                            <td class="px-2 py-1 font-mono text-xs text-gray-700 font-bold w-16 align-top">${s.codigo}</td>
-                            <td class="px-2 py-1 text-xs text-gray-800 italic">"${s.post.obs}"</td>
-                        </tr>`;
-                    if (s.grupo === 'Experimental') { postExp.innerHTML += row; hasPostExp=true; }
-                    else { postCtrl.innerHTML += row; hasPostCtrl=true; }
-                }
-            });
-
-            const emptyRow = '<tr><td colspan="2" class="px-2 py-2 text-center text-gray-400 text-xs">Sin observaciones.</td></tr>';
-            if(!hasPreExp) preExp.innerHTML = emptyRow;
-            if(!hasPreCtrl) preCtrl.innerHTML = emptyRow;
-            if(!hasPostExp) postExp.innerHTML = emptyRow;
-            if(!hasPostCtrl) postCtrl.innerHTML = emptyRow;
-        }
-
-        function updateValTable() {
-            const expStudents = students.filter(s => s.grupo === 'Experimental' && s.post && s.post.val);
-            const total = expStudents.length;
-            const tbody = document.getElementById('valTableBody');
-            if (total === 0) { tbody.innerHTML = '<tr><td colspan="2" class="px-3 py-2 text-center text-gray-400">Sin datos Post-Test.</td></tr>'; return; }
-
-            let ayuda = { si:0, poco:0, no:0 }, facil = { si:0, no:0 }, futuro = { si:0, no:0, igual:0 };
-            let sentidoSum = 0, sentidoCount = 0;
+            let sentidoSum = 0;
+            let sentidoCount = 0;
 
             expStudents.forEach(s => {
                 const v = s.post.val;
-                if (v.ayuda === 'Si') ayuda.si++; else if (v.ayuda === 'Poco') ayuda.poco++; else if (v.ayuda === 'No') ayuda.no++;
-                if (v.facil === 'Si') facil.si++; else if (v.facil === 'No') facil.no++;
-                if (v.futuro === 'Si') futuro.si++; else if (v.futuro === 'No') futuro.no++; else if (v.futuro === 'Igual') futuro.igual++;
-                if (v.sentido > 0) { sentidoSum += v.sentido; sentidoCount++; }
+                if (stats.ayuda[v.ayuda] !== undefined) stats.ayuda[v.ayuda]++;
+                if (stats.foco[v.foco] !== undefined) stats.foco[v.foco]++;
+                if (stats.repetir[v.repetir] !== undefined) stats.repetir[v.repetir]++;
+                if (v.sentido >= 1 && v.sentido <= 5) {
+                    stats.sentido[v.sentido - 1]++;
+                    sentidoSum += v.sentido;
+                    sentidoCount++;
+                }
             });
 
-            const pct = (n) => customRound((n/total)*100).toFixed(2).replace('.',',') + '%';
-            const avgSentido = sentidoCount ? fmt(sentidoSum/sentidoCount) : '-';
+            const sentidoAvg = sentidoCount > 0 ? (sentidoSum / sentidoCount).toFixed(2).replace('.', ',') : '0,00';
 
-            tbody.innerHTML = `
-                <tr class="border-b"><td class="px-3 py-2 text-xs"><b>1. Ayuda</b></td><td class="px-3 py-2 text-right text-xs">Sí: <b>${pct(ayuda.si)}</b> | Poco: ${pct(ayuda.poco)} | No: ${pct(ayuda.no)}</td></tr>
-                <tr class="border-b"><td class="px-3 py-2 text-xs"><b>2. Sensación (1-5)</b></td><td class="px-3 py-2 text-right text-xs font-bold text-blue-600">${avgSentido} / 5,00</td></tr>
-                <tr class="border-b"><td class="px-3 py-2 text-xs"><b>3. Atender mejor</b></td><td class="px-3 py-2 text-right text-xs">Sí: <b>${pct(facil.si)}</b> | No: ${pct(facil.no)}</td></tr>
-                <tr><td class="px-3 py-2 text-xs"><b>4. Repetir</b></td><td class="px-3 py-2 text-right text-xs">Sí: <b>${pct(futuro.si)}</b> | No: ${pct(futuro.no)} | Igual: ${pct(futuro.igual)}</td></tr>
+            const renderBar = (label, count, total, color) => {
+                const pct = total > 0 ? ((count / total) * 100).toFixed(0) : 0;
+                return `
+                    <div class="flex items-center gap-4 text-xs">
+                        <div class="w-24 font-bold text-slate-600">${label}</div>
+                        <div class="flex-1 stat-bar"><div class="stat-fill ${color}" style="width: ${pct}%"></div></div>
+                        <div class="w-12 text-right font-black text-slate-900">${pct}%</div>
+                        <div class="w-8 text-[10px] text-slate-400 italic">(${count})</div>
+                    </div>
+                `;
+            };
+
+            container.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <div class="space-y-4">
+                        <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b pb-2">¿Te ha ayudado la técnica?</h4>
+                        ${renderBar('Sí, mucho', stats.ayuda.Si, expStudents.length, 'bg-emerald-500')}
+                        ${renderBar('Un poco', stats.ayuda.Poco, expStudents.length, 'bg-amber-400')}
+                        ${renderBar('Nada', stats.ayuda.No, expStudents.length, 'bg-rose-500')}
+                    </div>
+                    <div class="space-y-4">
+                        <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b pb-2">¿Notas más concentración?</h4>
+                        ${renderBar('Sí', stats.foco.Si, expStudents.length, 'bg-blue-500')}
+                        ${renderBar('Un poco', stats.foco.Poco, expStudents.length, 'bg-indigo-300')}
+                        ${renderBar('Igual', stats.foco.No, expStudents.length, 'bg-slate-300')}
+                    </div>
+                    <div class="space-y-4">
+                        <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b pb-2">¿Repetirías en el futuro?</h4>
+                        ${renderBar('Sí', stats.repetir.Si, expStudents.length, 'bg-violet-500')}
+                        ${renderBar('No', stats.repetir.No, expStudents.length, 'bg-slate-800')}
+                        ${renderBar('Me es igual', stats.repetir.Igual, expStudents.length, 'bg-slate-400')}
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-end border-b pb-2">
+                             <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sensación de Bienestar (1-5)</h4>
+                             <div class="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">MEDIA: ${sentidoAvg}</div>
+                        </div>
+                        ${renderBar('5 - Excelente', stats.sentido[4], expStudents.length, 'bg-emerald-600')}
+                        ${renderBar('4 - Muy bien', stats.sentido[3], expStudents.length, 'bg-emerald-400')}
+                        ${renderBar('3 - Normal', stats.sentido[2], expStudents.length, 'bg-amber-300')}
+                        ${renderBar('2 - Poco', stats.sentido[1], expStudents.length, 'bg-orange-400')}
+                        ${renderBar('1 - Mal', stats.sentido[0], expStudents.length, 'bg-rose-600')}
+                    </div>
+                </div>
             `;
         }
 
-        function updateCharts() {
-            if (!charts.ans) return;
-            const exp = students.filter(s => s.grupo === 'Experimental');
-            const ctrl = students.filter(s => s.grupo === 'Control');
-            // Helper Media FILTRADA (Ignora 0)
-            const avg = (arr, phase, key) => { 
-                const valid = arr.filter(s => s[phase] && s[phase][key] > 0); 
-                if (!valid.length) return 0; 
-                return customRound(valid.reduce((acc, s) => acc + s[phase][key], 0) / valid.length);
-            };
-
-            charts.ans.data.datasets[0].data = [avg(exp,'pre','ans'), avg(ctrl,'pre','ans')];
-            charts.ans.data.datasets[1].data = [avg(exp,'post','ans'), avg(ctrl,'post','ans')];
-            charts.ans.update();
-
-            charts.att.data.datasets[0].data = [avg(exp,'pre','att'), avg(ctrl,'pre','att')];
-            charts.att.data.datasets[1].data = [avg(exp,'post','att'), avg(ctrl,'post','att')];
-            charts.att.update();
-
-            // GRÁFICA 3: SITUACIÓN INICIAL (PRE)
-            const preAnsExp = avg(exp, 'pre', 'ans'); const preAnsCtrl = avg(ctrl, 'pre', 'ans');
-            const preAttExp = avg(exp, 'pre', 'att'); const preAttCtrl = avg(ctrl, 'pre', 'att');
-            charts.initBar.data.datasets[0].data = [preAnsExp, preAnsCtrl];
-            charts.initBar.data.datasets[1].data = [preAttExp, preAttCtrl];
-            charts.initBar.update();
-
-            // GRÁFICA 4: SITUACIÓN FINAL (POST)
-            const postAnsExp = avg(exp, 'post', 'ans'); const postAnsCtrl = avg(ctrl, 'post', 'ans');
-            const postAttExp = avg(exp, 'post', 'att'); const postAttCtrl = avg(ctrl, 'post', 'att');
-            charts.finalBar.data.datasets[0].data = [postAnsExp, postAnsCtrl];
-            charts.finalBar.data.datasets[1].data = [postAttExp, postAttCtrl];
-            charts.finalBar.update();
-
-            let counts = [0,0,0,0,0,0];
-            students.forEach(s => { if(s.pre && s.pre.dist) { if(s.pre.dist.comp) counts[0]++; if(s.pre.dist.ruido) counts[1]++; if(s.pre.dist.cans) counts[2]++; if(s.pre.dist.preoc) counts[3]++; if(s.pre.dist.aburr) counts[4]++; if(s.pre.dist.olor) counts[5]++; } });
-            charts.dist.data.datasets[0].data = counts;
-            charts.dist.update();
-
-            const mExp = exp.filter(s => s.sexo === 'M'), mCtrl = ctrl.filter(s => s.sexo === 'M');
-            const fExp = exp.filter(s => s.sexo === 'F'), fCtrl = ctrl.filter(s => s.sexo === 'F');
-            charts.sexoAns.data.datasets[0].data = [avg(mExp,'pre','ans'), avg(mCtrl,'pre','ans'), avg(fExp,'pre','ans'), avg(fCtrl,'pre','ans')];
-            charts.sexoAns.data.datasets[1].data = [avg(mExp,'post','ans'), avg(mCtrl,'post','ans'), avg(fExp,'post','ans'), avg(fCtrl,'post','ans')];
-            charts.sexoAns.update();
-
-            charts.sexoAtt.data.datasets[0].data = [avg(mExp,'pre','att'), avg(mCtrl,'pre','att'), avg(fExp,'pre','att'), avg(fCtrl,'pre','att')];
-            charts.sexoAtt.data.datasets[1].data = [avg(mExp,'post','att'), avg(mCtrl,'post','att'), avg(fExp,'post','att'), avg(fCtrl,'post','att')];
-            charts.sexoAtt.update();
+        function renderTables() {
+            const cont = document.getElementById('dynamicTablesContainer'); cont.innerHTML = '';
+            config.groups.forEach(g => {
+                const groupS = students.filter(s => s.groupId === g.id);
+                cont.innerHTML += `
+                    <div class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
+                        <div class="p-4 bg-slate-50 border-b flex justify-between items-center"><h3 class="font-black text-slate-800 text-[10px] uppercase">${g.name}</h3></div>
+                        <div class="table-container">
+                            <table>
+                                <thead><tr><th class="text-left">ID</th><th class="text-center">Ans(Pre)</th><th class="text-center">Ans(Post)</th><th class="text-center">Atn(Pre)</th><th class="text-center">Atn(Post)</th><th class="text-right">ACC</th></tr></thead>
+                                <tbody>${groupS.slice().reverse().map(s => `<tr><td class="font-mono font-black text-slate-800">${s.codigo}</td><td class="text-center text-slate-400">${s.pre?.ans.toFixed(2)||'-'}</td><td class="text-center font-black ${s.post?.ans < s.pre?.ans ? 'text-green-600 bg-green-50' : ''}">${s.post?.ans.toFixed(2)||'-'}</td><td class="text-center text-slate-400">${s.pre?.att.toFixed(2)||'-'}</td><td class="text-center font-black ${s.post?.att > s.pre?.att ? 'text-green-600 bg-green-50' : ''}">${s.post?.att.toFixed(2)||'-'}</td><td class="text-right space-x-1"><button onclick="editStudent('${s.codigo}')" class="text-blue-500 hover:bg-blue-100 p-1 rounded">✎</button><button onclick="deleteStudent('${s.codigo}')" class="text-slate-300 hover:text-red-500 p-1 rounded">✕</button></td></tr>`).join('')}</tbody>
+                            </table>
+                        </div>
+                    </div>`;
+            });
         }
 
-        function clearForm() {
-            document.getElementById('codigo').value = '';
-            document.querySelectorAll('input[type="number"]').forEach(i => i.value = '');
-            document.querySelectorAll('input[type="checkbox"]').forEach(i => i.checked = false);
-            document.getElementById('observaciones').value = '';
-            document.getElementById('exp_sino').value = 'No';
-            document.getElementById('exp_freq').value = '';
-            document.getElementById('exp_donde').value = '';
-            document.getElementById('codigo').focus();
-        }
-
-        function editStudent(code) {
-            const s = students.find(s => s.codigo === code);
-            if(!s) return;
-            document.getElementById('codigo').value = s.codigo;
-            document.getElementById('grupo').value = s.grupo;
-            document.getElementById('sexo').value = s.sexo;
-            document.getElementById('edad').value = s.edad;
-            
-            const data = currentPhase === 'PRE' ? s.pre : s.post;
-            if(data) {
-                data.rawAns.forEach((v, i) => document.getElementById('a'+(i+1)).value = v);
-                data.rawAtt.forEach((v, i) => document.getElementById('at'+(i+1)).value = v);
-                document.getElementById('observaciones').value = data.obs || '';
-                if(currentPhase === 'PRE' && data.dist) {
-                    document.getElementById('d_comp').checked = data.dist.comp;
-                    document.getElementById('d_ruido').checked = data.dist.ruido;
-                    document.getElementById('d_cans').checked = data.dist.cans;
-                    document.getElementById('d_preoc').checked = data.dist.preoc;
-                    document.getElementById('d_aburr').checked = data.dist.aburr;
-                    document.getElementById('d_olor').checked = data.dist.olor;
-                    document.getElementById('exp_sino').value = data.exp.si;
-                    document.getElementById('exp_freq').value = data.exp.freq;
-                    document.getElementById('exp_donde').value = data.exp.donde;
-                } else if (currentPhase === 'POST' && data.val) {
-                    document.getElementById('val_ayuda').value = data.val.ayuda;
-                    document.getElementById('val_sentido').value = data.val.sentido;
-                    document.getElementById('val_facil').value = data.val.facil;
-                    document.getElementById('val_futuro').value = data.val.futuro;
-                }
-                showMessage(`Editando ${currentPhase} de ${code}`, 'text-yellow-600');
-            } else {
-                showMessage(`Alumno ${code} existe, añade datos de ${currentPhase}`, 'text-blue-600');
-                document.querySelectorAll('input[type="number"]').forEach(i => i.value = '');
-            }
-        }
-
-        function delStudent(code) {
-            if(confirm('¿Borrar alumno completo?')) {
-                students = students.filter(s => s.codigo !== code);
-                saveToLocal(); render();
-            }
-        }
-
-        function exportToCSV() {
-            let csv = "CODIGO,GRUPO,SEXO,EDAD,EXP_SI,EXP_FREQ,EXP_DONDE,PRE_ANS,POST_ANS,PRE_AT,POST_AT,VAL_AYUDA,VAL_NOTA,VAL_FUTURO\n";
+        function renderObservations() {
+            const pre = document.getElementById('obsContainerPre'); const post = document.getElementById('obsContainerPost'); pre.innerHTML = ''; post.innerHTML = '';
             students.forEach(s => {
-                const preA = s.pre ? s.pre.ans : '';
-                const postA = s.post ? s.post.ans : '';
-                const preAt = s.pre ? s.pre.att : '';
-                const postAt = s.post ? s.post.att : '';
-                const expSi = s.pre ? s.pre.exp.si : '';
-                const expFreq = s.pre ? s.pre.exp.freq : '';
-                const expDonde = s.pre ? s.pre.exp.donde : '';
-                const v1 = s.post?.val?.ayuda || '';
-                const v2 = s.post?.val?.sentido || '';
-                const v3 = s.post?.val?.futuro || '';
-                csv += `${s.codigo},${s.grupo},${s.sexo},${s.edad},${expSi},${expFreq},${expDonde},${preA},${postA},${preAt},${postAt},${v1},${v2},${v3}\n`;
+                const g = config.groups.find(x => x.id === s.groupId)?.name || 'N/A';
+                if (s.pre?.obs) pre.innerHTML += `<div class="p-3 bg-amber-50 rounded-xl border border-amber-100 shadow-sm"><span class="font-black text-amber-800">${s.codigo} (${g}):</span> <p class="mt-1 italic text-slate-700">"${s.pre.obs}"</p></div>`;
+                if (s.post?.obs) post.innerHTML += `<div class="p-3 bg-emerald-50 rounded-xl border border-emerald-100 shadow-sm"><span class="font-black text-emerald-800">${s.codigo} (${g}):</span> <p class="mt-1 italic text-slate-700">"${s.post.obs}"</p></div>`;
             });
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = "datos_completos_tfm.csv";
-            link.click();
         }
 
-        function downloadBackup() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(students));
-            const link = document.createElement("a"); link.href = dataStr; link.download = "backup_tfm_v32.json"; link.click();
-        }
-
-        function loadBackupFile(input) {
-            const file = input.files[0];
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const raw = JSON.parse(e.target.result);
-                    students = raw.map(s => {
-                        if(s.pre || s.post) {
-                            if (s.pre && !s.pre.exp) s.pre.exp = { si: 'No', freq: '', donde: '' };
-                            return s; 
-                        }
-                        return { 
-                            codigo: s.codigo, grupo: s.grupo, sexo: s.sexo, edad: s.edad,
-                            pre: { ans: s.totalAnsiedad, att: s.totalAtencion, rawAns: s.rawAnsiedad, rawAtt: s.rawAtencion, dist: s.dist, exp: { si: s.expSiNo, freq: s.expFreq, donde: s.expDonde } },
-                            post: null
-                        };
-                    });
-                    saveToLocal(); render(); alert('Datos importados y actualizados a v32');
-                } catch(err) { alert('Error al cargar'); }
-            };
-            reader.readAsText(file);
-        }
-
-        function saveToLocal() { localStorage.setItem('tfm_v32', JSON.stringify(students)); }
-        function loadData() { const d = localStorage.getItem('tfm_v32') || localStorage.getItem('tfm_v31') || localStorage.getItem('tfm_v30') || localStorage.getItem('tfm_v29') || localStorage.getItem('tfm_v28') || localStorage.getItem('tfm_v27') || localStorage.getItem('tfm_v26') || localStorage.getItem('tfm_v25') || localStorage.getItem('tfm_v24') || localStorage.getItem('tfm_v23'); if(d) students = JSON.parse(d); }
-        function wipeAll() { if(confirm('¿Borrar todo?')) { students=[]; saveToLocal(); render(); } }
-        function showMessage(txt, color) { const m = document.getElementById('msg'); m.innerText = txt; m.className = `text-center text-xs font-bold mt-2 h-4 ${color}`; setTimeout(()=>m.innerText='',3000); }
-
+        // --- GRÁFICAS: INICIALIZACIÓN Y DATOS ---
         function initCharts() {
-            const commonOpts = { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                layout: { padding: { top: 20 } },
-                plugins: { 
-                    legend: { position: 'bottom' },
-                    datalabels: {
-                        color: '#fff', 
-                        anchor: 'center', 
-                        align: 'center',
-                        font: { weight: 'bold', size: 11 },
-                        formatter: (value) => value > 0 ? fmt(value) : '' 
-                    }
-                } 
+            const cfg = (t, c1, c2, maxVal) => ({ type: 'bar', data: { labels: [], datasets: [{ label: 'Pre', data: [], backgroundColor: c1 }, { label: 'Post', data: [], backgroundColor: c2 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: t, font: { weight: 'bold', size: 12 } }, datalabels: { anchor: 'end', align: 'top', font: { weight: 'bold', size: 9 }, formatter: v => v > 0 ? v.toFixed(1) : '' } }, scales: { y: { beginAtZero: true, max: maxVal } } } });
+
+            const safe = (id, config, store, key) => { const el = document.getElementById(id); if (!el) return; if (store[key]) store[key].destroy(); store[key] = new Chart(el, config); };
+
+            // 1. Globales Totales
+            safe('chartGlobalAnsiedad', cfg('ANSIEDAD GLOBAL', '#fda4af', '#e11d48', 40), charts.fixed, 'gAns');
+            safe('chartGlobalAtencion', cfg('ATENCIÓN GLOBAL', '#93c5fd', '#2563eb', 25), charts.fixed, 'gAtt');
+
+            // 2. Globales por Sexo y Condición (LO NUEVO)
+            const gSexAnsCfg = cfg('ANSIEDAD POR SEXO Y CONDICIÓN', '#cbd5e1', '#f43f5e', 40);
+            gSexAnsCfg.data.labels = ['Chicos (Exp)', 'Chicos (Ctrl)', 'Chicas (Exp)', 'Chicas (Ctrl)'];
+            safe('chartGlobalSexAns', gSexAnsCfg, charts.fixed, 'gsAns');
+
+            const gSexAttCfg = cfg('ATENCIÓN POR SEXO Y CONDICIÓN', '#cbd5e1', '#3b82f6', 25);
+            gSexAttCfg.data.labels = ['Chicos (Exp)', 'Chicos (Ctrl)', 'Chicas (Exp)', 'Chicas (Ctrl)'];
+            safe('chartGlobalSexAtt', gSexAttCfg, charts.fixed, 'gsAtt');
+
+            // 3. Reportes de Aula
+            config.groups.forEach(g => {
+                if (!charts.groups[g.id]) charts.groups[g.id] = {};
+                safe(`chartGrpSum-${g.id}`, cfg('PROGRESO GRUPO', '#94a3b8', '#3b82f6', 40), charts.groups[g.id], 'sum');
+                safe(`chartGrpAnsSex-${g.id}`, cfg('ANSIEDAD/SEXO', '#cbd5e1', '#f43f5e', 40), charts.groups[g.id], 'aSex');
+                safe(`chartGrpAttSex-${g.id}`, cfg('ATENCIÓN/SEXO', '#cbd5e1', '#3b82f6', 25), charts.groups[g.id], 'tSex');
+            });
+        }
+
+        function updateChartsData() {
+            const getAvg = (cond, sex, phase, key) => {
+                const valid = students.filter(s => {
+                    const g = config.groups.find(x => x.id === s.groupId);
+                    const condMatch = cond ? g?.type === cond : true;
+                    const sexMatch = sex ? s.sexo === sex : true;
+                    return condMatch && sexMatch && s[phase]?.[key] > 0;
+                });
+                return valid.length ? valid.reduce((a, b) => a + b[phase][key], 0) / valid.length : 0;
             };
 
-            charts.ans = new Chart(document.getElementById('chartCompAnsiedad'), { type: 'bar', data: { labels: ['Exp', 'Ctrl'], datasets: [{ label: 'Pre-Test', data:[0,0], backgroundColor: '#9ca3af' }, { label: 'Post-Test', data:[0,0], backgroundColor: '#22c55e' }] }, options: { ...commonOpts, plugins: { ...commonOpts.plugins, title: { display: true, text: 'Evolución ANSIEDAD (Menos es mejor)' } } } });
+            const getAvgGrp = (gid, phase, key) => { const v = students.filter(s => s.groupId === gid && s[phase]?.[key] > 0); return v.length ? v.reduce((a, b) => a + b[phase][key], 0) / v.length : 0; };
+            const getAvgGrpSex = (gid, sex, phase, key) => { const v = students.filter(s => s.groupId === gid && s.sexo === sex && s[phase]?.[key] > 0); return v.length ? v.reduce((a, b) => a + b[phase][key], 0) / v.length : 0; };
 
-            charts.att = new Chart(document.getElementById('chartCompAtencion'), { type: 'bar', data: { labels: ['Exp', 'Ctrl'], datasets: [{ label: 'Pre-Test', data:[0,0], backgroundColor: '#9ca3af' }, { label: 'Post-Test', data:[0,0], backgroundColor: '#3b82f6' }] }, options: { ...commonOpts, plugins: { ...commonOpts.plugins, title: { display: true, text: 'Evolución ATENCIÓN (Más es mejor)' } } } });
+            // Globales Totales
+            if (charts.fixed.gAns) { charts.fixed.gAns.data.labels = ['Muestra Experimental', 'Muestra Control']; charts.fixed.gAns.data.datasets[0].data = [getAvg('Experimental',null,'pre','ans'), getAvg('Control',null,'pre','ans')]; charts.fixed.gAns.data.datasets[1].data = [getAvg('Experimental',null,'post','ans'), getAvg('Control',null,'post','ans')]; charts.fixed.gAns.update(); }
+            if (charts.fixed.gAtt) { charts.fixed.gAtt.data.labels = ['Muestra Experimental', 'Muestra Control']; charts.fixed.gAtt.data.datasets[0].data = [getAvg('Experimental',null,'pre','att'), getAvg('Control',null,'pre','att')]; charts.fixed.gAtt.data.datasets[1].data = [getAvg('Experimental',null,'post','att'), getAvg('Control',null,'post','att')]; charts.fixed.gAtt.update(); }
 
-            const initBarOpts = JSON.parse(JSON.stringify(commonOpts));
-            initBarOpts.plugins.datalabels.color = '#fff'; 
-            charts.initBar = new Chart(document.getElementById('chartInitialBar'), { 
-                type: 'bar', 
-                data: { 
-                    labels: ['Experimental', 'Control'], 
-                    datasets: [
-                        { label: 'Ansiedad Inicial', data:[0,0], backgroundColor: '#ef4444' }, 
-                        { label: 'Atención Inicial', data:[0,0], backgroundColor: '#3b82f6' } 
-                    ] 
-                }, 
-                options: { ...initBarOpts, plugins: { ...initBarOpts.plugins, title: { display: true, text: 'Situación Inicial (Pre-Test)' } } } 
+            // Globales por Sexo y Condición (ACTUALIZAR)
+            if (charts.fixed.gsAns) {
+                charts.fixed.gsAns.data.datasets[0].data = [getAvg('Experimental','M','pre','ans'), getAvg('Control','M','pre','ans'), getAvg('Experimental','F','pre','ans'), getAvg('Control','F','pre','ans')];
+                charts.fixed.gsAns.data.datasets[1].data = [getAvg('Experimental','M','post','ans'), getAvg('Control','M','post','ans'), getAvg('Experimental','F','post','ans'), getAvg('Control','F','post','ans')];
+                charts.fixed.gsAns.update();
+            }
+            if (charts.fixed.gsAtt) {
+                charts.fixed.gsAtt.data.datasets[0].data = [getAvg('Experimental','M','pre','att'), getAvg('Control','M','pre','att'), getAvg('Experimental','F','pre','att'), getAvg('Control','F','pre','att')];
+                charts.fixed.gsAtt.data.datasets[1].data = [getAvg('Experimental','M','post','att'), getAvg('Control','M','post','att'), getAvg('Experimental','F','post','att'), getAvg('Control','F','post','att')];
+                charts.fixed.gsAtt.update();
+            }
+
+            // Individuales
+            config.groups.forEach(g => {
+                if (charts.groups[g.id]) {
+                    if (charts.groups[g.id].sum) { charts.groups[g.id].sum.data.labels = ['Ansiedad', 'Atención']; charts.groups[g.id].sum.data.datasets[0].data = [getAvgGrp(g.id,'pre','ans'), getAvgGrp(g.id,'pre','att')]; charts.groups[g.id].sum.data.datasets[1].data = [getAvgGrp(g.id,'post','ans'), getAvgGrp(g.id,'post','att')]; charts.groups[g.id].sum.update(); }
+                    if (charts.groups[g.id].aSex) { charts.groups[g.id].aSex.data.labels = ['Chicos', 'Chicas']; charts.groups[g.id].aSex.data.datasets[0].data = [getAvgGrpSex(g.id,'M','pre','ans'), getAvgGrpSex(g.id,'F','pre','ans')]; charts.groups[g.id].aSex.data.datasets[1].data = [getAvgGrpSex(g.id,'M','post','ans'), getAvgGrpSex(g.id,'F','post','ans')]; charts.groups[g.id].aSex.update(); }
+                    if (charts.groups[g.id].tSex) { charts.groups[g.id].tSex.data.labels = ['Chicos', 'Chicas']; charts.groups[g.id].tSex.data.datasets[0].data = [getAvgGrpSex(g.id,'M','pre','att'), getAvgGrpSex(g.id,'F','pre','att')]; charts.groups[g.id].tSex.data.datasets[1].data = [getAvgGrpSex(g.id,'M','post','att'), getAvgGrpSex(g.id,'F','post','att')]; charts.groups[g.id].tSex.update(); }
+                }
             });
+        }
 
-            // NUEVA GRÁFICA FINAL
-            charts.finalBar = new Chart(document.getElementById('chartFinalBar'), { 
-                type: 'bar', 
-                data: { 
-                    labels: ['Experimental', 'Control'], 
-                    datasets: [
-                        { label: 'Ansiedad Final', data:[0,0], backgroundColor: '#ef4444' }, 
-                        { label: 'Atención Final', data:[0,0], backgroundColor: '#3b82f6' } 
-                    ] 
-                }, 
-                options: { ...initBarOpts, plugins: { ...initBarOpts.plugins, title: { display: true, text: 'Situación Final (Post-Test)' } } } 
-            });
-
-            const distOpts = JSON.parse(JSON.stringify(commonOpts));
-            distOpts.indexAxis = 'y';
-            distOpts.plugins.datalabels.color = '#000'; 
-            distOpts.plugins.datalabels.anchor = 'end';
-            distOpts.plugins.datalabels.align = 'end';
-            distOpts.layout.padding.right = 30; 
-            charts.dist = new Chart(document.getElementById('chartDistractores'), { type: 'bar', data: { labels: ['Compañeros','Ruido','Cansancio','Preocup.','Aburrim.','Olor'], datasets: [{ label: 'Afectados', data:[0,0,0,0,0,0], backgroundColor: '#f87171' }] }, options: { ...distOpts, plugins: { ...distOpts.plugins, title: { display: true, text: 'Distractores (Pre-Test)' } } } });
-
-            charts.sexoAns = new Chart(document.getElementById('chartSexoAnsiedad'), { type: 'bar', data: { labels: ['Chicos(E)', 'Chicos(C)', 'Chicas(E)', 'Chicas(C)'], datasets: [{ label: 'Pre', data:[], backgroundColor: '#fca5a5' }, { label: 'Post', data:[], backgroundColor: '#b91c1c' }] }, options: { ...commonOpts, plugins: { ...commonOpts.plugins, title: { display: true, text: 'Evolución Ansiedad por Sexo' } } } });
-
-            charts.sexoAtt = new Chart(document.getElementById('chartSexoAtencion'), { type: 'bar', data: { labels: ['Chicos(E)', 'Chicos(C)', 'Chicas(E)', 'Chicas(C)'], datasets: [{ label: 'Pre', data:[], backgroundColor: '#93c5fd' }, { label: 'Post', data:[], backgroundColor: '#1d4ed8' }] }, options: { ...commonOpts, plugins: { ...commonOpts.plugins, title: { display: true, text: 'Evolución Atención por Sexo' } } } });
+        // --- UTILIDADES ---
+        function switchTab(p) { currentPhase = p; document.getElementById('tabPre').className = p === 'PRE' ? 'w-1/2 py-4 font-black tab-active' : 'w-1/2 py-4 font-black tab-inactive'; document.getElementById('tabPost').className = p === 'POST' ? 'w-1/2 py-4 font-black tab-active' : 'w-1/2 py-4 font-black tab-inactive'; document.getElementById('sectionPreExp').classList.toggle('hidden', p !== 'PRE'); document.getElementById('sectionPostVal').classList.toggle('hidden', p !== 'POST'); document.getElementById('btnPhaseText').innerText = p; checkGroupType(); }
+        function checkGroupType() { const g = config.groups.find(x => x.id === document.getElementById('inputGrupo').value); if (currentPhase === 'POST') document.getElementById('sectionPostVal').classList.toggle('hidden', !g || g.type !== 'Experimental'); }
+        function clearForm() { document.getElementById('codigo').value = ''; document.querySelectorAll('input[type="number"]').forEach(i => i.value = ''); document.getElementById('observaciones').value = ''; }
+        function checkExistingStudent() { const s = students.find(x => x.codigo === document.getElementById('codigo').value.toUpperCase().trim()); if (s) { document.getElementById('inputGrupo').value = s.groupId; document.getElementById('sexo').value = s.sexo; checkGroupType(); } }
+        function editStudent(code) { const s = students.find(x => x.codigo === code); if (!s) return; document.getElementById('codigo').value = s.codigo; document.getElementById('inputGrupo').value = s.groupId; document.getElementById('sexo').value = s.sexo; const d = currentPhase === 'PRE' ? s.pre : s.post; if (d) { d.rawAns?.forEach((v, i) => document.getElementById('a'+(i+1)).value = v); d.rawAtt?.forEach((v, i) => document.getElementById('at'+(i+1)).value = v); document.getElementById('observaciones').value = d.obs || ''; } checkGroupType(); }
+        function deleteStudent(code) { if (confirm(`¿Borrar a ${code}?`)) { students = students.filter(s => s.codigo !== code); saveData(); renderAll(); } }
+        function showMsg(t, c) { const m = document.getElementById('msg'); m.innerText = t; m.className = "text-center text-[11px] font-bold mt-4 h-4 " + c; setTimeout(() => m.innerText = "", 3000); }
+        function saveData() { localStorage.setItem('tfm_students_v50', JSON.stringify(students)); localStorage.setItem('tfm_groups_v50', JSON.stringify(config.groups)); }
+        function loadData() { const s = localStorage.getItem('tfm_students_v50') || localStorage.getItem('tfm_students_v49'); const g = localStorage.getItem('tfm_groups_v50') || localStorage.getItem('tfm_groups_v49'); if (s) students = JSON.parse(s); if (g) config.groups = JSON.parse(g); }
+        function downloadBackup() { const b = new Blob([JSON.stringify({students, groups: config.groups})], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'backup_v50.json'; a.click(); }
+        function loadBackupFile(input) { const r = new FileReader(); r.onload = (e) => { const d = JSON.parse(e.target.result); students = d.students; config.groups = d.groups; saveData(); renderAll(); }; r.readAsText(input.files[0]); }
+        function exportToCSV() {
+            let csv = "\uFEFFCODIGO,GRUPO,TIPO,SEXO,ANS_PRE,ANS_POST,AT_PRE,AT_POST,VAL_AYUDA,VAL_SENTIDO,VAL_FOCO,VAL_REPETIR\n";
+            students.forEach(s => { const g = config.groups.find(x => x.id === s.groupId); csv += `"${s.codigo}","${g?.name||'N/A'}","${g?.type||'N/A'}","${s.sexo}",${s.pre?.ans||0},${s.post?.ans||0},${s.pre?.att||0},${s.post?.att||0},"${s.post?.val?.ayuda||''}",${s.post?.val?.sentido||0},"${s.post?.val?.foco||''}", "${s.post?.val?.repetir||''}"\n`; });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'})); a.download = 'datos_tfm_v50.csv'; a.click();
         }
     </script>
 </body>
