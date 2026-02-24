@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analytics Pro - v50 Impacto Global por Sexo</title>
+    <title>Analytics Pro - v52 Formulario Horizontal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
@@ -17,22 +17,23 @@
         .stat-bar { height: 8px; border-radius: 4px; background-color: #e2e8f0; overflow: hidden; }
         .stat-fill { height: 100%; transition: width 0.5s ease-out; }
         
-        /* Tablas profesionales */
         .table-container { overflow-x: auto; border-radius: 1rem; border: 1px solid #e2e8f0; }
         table { width: 100%; border-collapse: collapse; min-width: 600px; }
         th { background-color: #f8fafc; color: #64748b; text-transform: uppercase; font-size: 0.7rem; padding: 1rem; border-bottom: 2px solid #e2e8f0; }
         td { padding: 1rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
     <div class="max-w-7xl mx-auto">
         
-        <!-- CABECERA -->
         <header class="bg-white p-6 rounded-2xl shadow-xl mb-8 border-b-4 border-blue-600 flex flex-col md:flex-row justify-between items-center gap-6">
             <div class="text-center md:text-left">
                 <h1 class="text-4xl font-black text-slate-900 tracking-tighter">ANALYTICS <span class="text-blue-600">PRO</span></h1>
-                <p class="text-slate-500 font-medium">v50 - Cruce Global de Sexo y Condición</p>
+                <p class="text-slate-500 font-medium">v52 - Interfaz Horizontal de Recogida de Datos</p>
             </div>
             <div class="flex flex-wrap gap-3 justify-center">
                 <input type="file" id="fileInput" class="hidden" accept=".json" onchange="loadBackupFile(this)">
@@ -42,90 +43,85 @@
             </div>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
-            <!-- PANEL DE ENTRADA -->
-            <div class="lg:col-span-4 space-y-8">
-                <!-- GESTOR DE GRUPOS -->
+            <div class="lg:col-span-4 space-y-6 sticky top-6 z-10 max-h-[95vh] overflow-y-auto no-scrollbar pb-4">
                 <section class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
-                    <div class="bg-slate-800 p-4 flex justify-between items-center">
-                        <h2 class="text-white font-extrabold text-xs uppercase tracking-widest">👥 Grupos de Trabajo</h2>
+                    <div class="bg-slate-800 p-3 flex justify-between items-center">
+                        <h2 class="text-white font-extrabold text-[10px] uppercase tracking-widest">👥 Grupos</h2>
                     </div>
-                    <div class="p-4 space-y-3">
-                        <div id="groupList" class="space-y-2"></div>
-                        <button onclick="addNewGroup()" class="w-full py-3 bg-slate-50 hover:bg-blue-50 text-slate-600 hover:text-blue-600 rounded-xl text-xs font-black border-2 border-dashed border-slate-200 transition-all">+ NUEVO GRUPO</button>
+                    <div class="p-3 space-y-2">
+                        <div id="groupList" class="space-y-1"></div>
+                        <button onclick="addNewGroup()" class="w-full py-2 bg-slate-50 hover:bg-blue-50 text-slate-500 text-[10px] font-black border-2 border-dashed border-slate-200 rounded-xl transition-all">+ NUEVO GRUPO</button>
                     </div>
                 </section>
 
-                <!-- FORMULARIO -->
                 <section class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
                     <div class="flex border-b">
-                        <button onclick="switchTab('PRE')" id="tabPre" class="w-1/2 py-4 font-black transition-all tab-active">PRE-TEST</button>
-                        <button onclick="switchTab('POST')" id="tabPost" class="w-1/2 py-4 font-black transition-all tab-inactive">POST-TEST</button>
+                        <button onclick="switchTab('PRE')" id="tabPre" class="w-1/2 py-3 font-black transition-all tab-active text-xs">PRE-TEST</button>
+                        <button onclick="switchTab('POST')" id="tabPost" class="w-1/2 py-3 font-black transition-all tab-inactive text-xs">POST-TEST</button>
                     </div>
 
-                    <div class="p-6 text-sm">
-                        <div class="space-y-4 mb-6">
+                    <div class="p-5 text-sm">
+                        <div class="grid grid-cols-1 gap-4 mb-6">
                             <div>
-                                <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Seleccionar Grupo</label>
-                                <select id="inputGrupo" class="w-full border-2 border-slate-100 rounded-xl p-3 bg-slate-50 font-bold focus:border-blue-500 outline-none" onchange="checkGroupType()"></select>
+                                <label class="block text-[9px] font-black text-slate-400 uppercase mb-1">Grupo Actual</label>
+                                <select id="inputGrupo" class="w-full border-2 border-slate-100 rounded-xl p-2.5 bg-slate-50 font-bold focus:border-blue-500 outline-none text-xs" onchange="checkGroupType()"></select>
                             </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <input type="text" id="codigo" class="w-full border-2 border-slate-100 rounded-xl p-3 uppercase font-mono font-bold" placeholder="CODIGO" onblur="checkExistingStudent()">
-                                <select id="sexo" class="w-full border-2 border-slate-100 rounded-xl p-3 bg-white font-bold"><option value="M">Masc</option><option value="F">Fem</option></select>
+                            <div class="grid grid-cols-2 gap-3">
+                                <input type="text" id="codigo" class="border-2 border-slate-100 rounded-xl p-2.5 uppercase font-mono font-bold text-xs outline-none focus:border-blue-500" placeholder="CODIGO" onblur="checkExistingStudent()">
+                                <select id="sexo" class="border-2 border-slate-100 rounded-xl p-2.5 bg-white font-bold text-xs outline-none focus:border-blue-500"><option value="M">Masc</option><option value="F">Fem</option></select>
                             </div>
                         </div>
 
-                        <!-- BLOQUES COMUNES -->
                         <div id="sectionPreExp" class="p-4 bg-slate-50 rounded-2xl border border-slate-200 mb-6">
-                            <h3 class="text-[10px] font-black text-slate-600 uppercase mb-3">🧘 Bloque 0: Experiencia</h3>
-                            <select id="exp_si" class="w-full border rounded-lg p-2 text-xs font-bold mb-2"><option value="No">Sin experiencia</option><option value="Si">Con experiencia</option></select>
+                            <h3 class="text-[9px] font-black text-slate-600 uppercase mb-3">🧘 Experiencia Previa</h3>
+                            <select id="exp_si" class="w-full border rounded-lg p-2 text-[11px] font-bold mb-2"><option value="No">Sin experiencia</option><option value="Si">Con experiencia</option></select>
                             <div class="grid grid-cols-2 gap-2">
-                                <select id="exp_freq" class="border rounded-lg p-2 text-[10px]"><option value="">Frecuencia...</option><option value="Pocas">Pocas veces</option><option value="Habitual">Habitual</option></select>
-                                <input type="text" id="exp_donde" class="border rounded-lg p-2 text-[10px]" placeholder="¿Dónde?">
+                                <select id="exp_freq" class="border rounded-lg p-2 text-[10px] bg-white"><option value="">Frecuencia...</option><option value="Pocas">Pocas veces</option><option value="A veces">A veces</option><option value="Habitual">Habitual</option></select>
+                                <input type="text" id="exp_donde" class="border rounded-lg p-2 text-[10px] bg-white outline-none" placeholder="¿Dónde?">
                             </div>
                         </div>
 
                         <div id="sectionPostVal" class="hidden p-4 bg-emerald-50 rounded-2xl border border-emerald-100 mb-6">
-                            <h3 class="text-[10px] font-black text-emerald-800 uppercase mb-3">⭐ Valoración</h3>
-                            <div class="space-y-2">
-                                <select id="val_ayuda" class="w-full border rounded p-1.5 text-xs"><option value="-">¿Ayuda?</option><option value="Si">Sí</option><option value="No">No</option></select>
-                                <input type="number" id="val_sentido" min="1" max="5" class="w-full border rounded p-1.5 text-xs" placeholder="Sensación (1-5)">
-                                <select id="val_foco" class="w-full border rounded p-1.5 text-xs"><option value="-">¿Concentración?</option><option value="Si">Sí</option><option value="No">No</option></select>
-                                <select id="val_repetir" class="w-full border rounded p-1.5 text-xs"><option value="-">¿Repetir?</option><option value="Si">Sí</option><option value="No">No</option></select>
+                            <h3 class="text-[9px] font-black text-emerald-800 uppercase mb-3">⭐ Valoración Intervención</h3>
+                            <div class="grid grid-cols-2 gap-2">
+                                <select id="val_ayuda" class="border rounded p-2 text-[10px] bg-white"><option value="-">¿Ayuda?</option><option value="Si">Sí</option><option value="Poco">Un poco</option><option value="No">No</option></select>
+                                <input type="number" id="val_sentido" min="1" max="5" class="border rounded p-2 text-[10px] outline-none" placeholder="Sensación (1-5)">
+                                <select id="val_foco" class="border rounded p-2 text-[10px] bg-white"><option value="-">¿Más foco?</option><option value="Si">Sí</option><option value="No">Igual</option></select>
+                                <select id="val_repetir" class="border rounded p-2 text-[10px] bg-white"><option value="-">¿Repetir?</option><option value="Si">Sí</option><option value="Igual">Me da igual</option><option value="No">No</option></select>
                             </div>
                         </div>
 
-                        <div class="space-y-4">
-                            <div class="p-4 bg-blue-50 rounded-2xl border border-blue-100">
-                                <h3 class="text-[10px] font-black text-blue-800 uppercase mb-3 text-center">Ansiedad (1-4)</h3>
-                                <div class="grid grid-cols-5 gap-2">
-                                    <input type="number" id="a1" class="w-full border rounded-lg p-2 text-center" placeholder="1"><input type="number" id="a2" class="w-full border rounded-lg p-2 text-center" placeholder="2"><input type="number" id="a3" class="w-full border rounded-lg p-2 text-center" placeholder="3"><input type="number" id="a4" class="w-full border rounded-lg p-2 text-center" placeholder="4"><input type="number" id="a5" class="w-full border rounded-lg p-2 text-center" placeholder="5">
-                                    <input type="number" id="a6" class="w-full border rounded-lg p-2 text-center" placeholder="6"><input type="number" id="a7" class="w-full border rounded-lg p-2 text-center" placeholder="7"><input type="number" id="a8" class="w-full border rounded-lg p-2 text-center" placeholder="8"><input type="number" id="a9" class="w-full border rounded-lg p-2 text-center" placeholder="9"><input type="number" id="a10" class="w-full border rounded-lg p-2 text-center" placeholder="10">
+                        <div class="grid grid-cols-1 gap-4">
+                            <div class="p-3 bg-blue-50 rounded-2xl border border-blue-100">
+                                <h3 class="text-[9px] font-black text-blue-800 uppercase mb-2 text-center">Ansiedad (1-4)</h3>
+                                <div class="grid grid-cols-5 gap-1.5">
+                                    <input type="number" id="a1" class="w-full border rounded-lg p-1.5 text-center text-xs font-bold" placeholder="1"><input type="number" id="a2" class="w-full border rounded-lg p-1.5 text-center text-xs font-bold" placeholder="2"><input type="number" id="a3" class="w-full border rounded-lg p-1.5 text-center text-xs font-bold" placeholder="3"><input type="number" id="a4" class="w-full border rounded-lg p-1.5 text-center text-xs font-bold" placeholder="4"><input type="number" id="a5" class="w-full border rounded-lg p-1.5 text-center text-xs font-bold" placeholder="5">
+                                    <input type="number" id="a6" class="w-full border rounded-lg p-1.5 text-center text-xs font-bold" placeholder="6"><input type="number" id="a7" class="w-full border rounded-lg p-1.5 text-center text-xs font-bold" placeholder="7"><input type="number" id="a8" class="w-full border rounded-lg p-1.5 text-center text-xs font-bold" placeholder="8"><input type="number" id="a9" class="w-full border rounded-lg p-1.5 text-center text-xs font-bold" placeholder="9"><input type="number" id="a10" class="w-full border rounded-lg p-1.5 text-center text-xs font-bold" placeholder="10">
                                 </div>
                             </div>
-                            <div class="p-4 bg-purple-50 rounded-2xl border border-purple-100">
-                                <h3 class="text-[10px] font-black text-purple-800 uppercase mb-3 text-center">Atención (1-5)</h3>
-                                <div class="grid grid-cols-5 gap-2">
-                                    <input type="number" id="at1" class="w-full border rounded-lg p-2 text-center" placeholder="1"><input type="number" id="at2" class="w-full border rounded-lg p-2 text-center" placeholder="2"><input type="number" id="at3" class="w-full border rounded-lg p-2 text-center" placeholder="3"><input type="number" id="at4" class="w-full border rounded-lg p-2 text-center" placeholder="4"><input type="number" id="at5" class="w-full border rounded-lg p-2 text-center" placeholder="5">
+                            <div class="p-3 bg-purple-50 rounded-2xl border border-purple-100">
+                                <h3 class="text-[9px] font-black text-purple-800 uppercase mb-2 text-center">Atención (1-5)</h3>
+                                <div class="grid grid-cols-5 gap-1.5">
+                                    <input type="number" id="at1" class="w-full border rounded-lg p-1.5 text-center text-xs font-bold" placeholder="1"><input type="number" id="at2" class="w-full border rounded-lg p-1.5 text-center text-xs font-bold" placeholder="2"><input type="number" id="at3" class="w-full border rounded-lg p-1.5 text-center text-xs font-bold" placeholder="3"><input type="number" id="at4" class="w-full border rounded-lg p-1.5 text-center text-xs font-bold" placeholder="4"><input type="number" id="at5" class="w-full border rounded-lg p-1.5 text-center text-xs font-bold" placeholder="5">
                                 </div>
                             </div>
-                            <textarea id="observaciones" class="w-full border-2 border-slate-100 rounded-2xl p-4 text-xs h-16 bg-slate-50" placeholder="Notas..."></textarea>
                         </div>
 
-                        <div class="mt-8 flex gap-3">
-                            <button onclick="saveDataEntry()" class="flex-1 bg-blue-600 text-white font-black py-4 rounded-2xl shadow-xl uppercase text-sm">GUARDAR <span id="btnPhaseText">PRE</span></button>
-                            <button onclick="clearForm()" class="px-5 bg-slate-100 text-slate-500 rounded-2xl">✕</button>
+                        <textarea id="observaciones" class="w-full border-2 border-slate-100 rounded-2xl p-3 text-xs h-16 bg-slate-50 mt-4 outline-none focus:border-blue-500" placeholder="Notas cualitativas..."></textarea>
+
+                        <div class="mt-6 flex gap-3">
+                            <button onclick="saveDataEntry()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-black py-3.5 rounded-2xl shadow-xl uppercase text-xs transition-all active:scale-95">GUARDAR <span id="btnPhaseText">PRE</span></button>
+                            <button onclick="clearForm()" class="px-4 bg-slate-100 text-slate-500 rounded-2xl hover:bg-slate-200 transition-colors">✕</button>
                         </div>
-                        <p id="msg" class="text-center text-[11px] font-bold mt-4 h-4"></p>
+                        <p id="msg" class="text-center text-[10px] font-bold mt-3 h-3"></p>
                     </div>
                 </section>
             </div>
 
-            <!-- PANEL DE RESULTADOS -->
             <div class="lg:col-span-8 space-y-12">
                 
-                <!-- 1. BLOQUE DE RESULTADOS TOTALES -->
                 <div class="space-y-6">
                     <h2 class="text-sm font-black text-slate-400 uppercase tracking-[0.2em] text-center italic">1. Resultados Globales Muestra Total</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -134,48 +130,49 @@
                     </div>
                 </div>
 
-                <!-- 2. BLOQUE DE RESULTADOS POR SEXO (CRUCE GLOBAL) -->
                 <div class="space-y-6">
                     <h2 class="text-sm font-black text-slate-400 uppercase tracking-[0.2em] text-center italic">2. Cruce Global: Sexo y Condición</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="bg-white p-6 rounded-2xl shadow-lg border-t-8 border-rose-500">
                             <div class="chart-container"><canvas id="chartGlobalSexAns"></canvas></div>
-                            <p class="text-[9px] text-center text-slate-400 mt-2 italic">Segmentación Global Ansiedad (STAIC)</p>
                         </div>
                         <div class="bg-white p-6 rounded-2xl shadow-lg border-t-8 border-blue-500">
                             <div class="chart-container"><canvas id="chartGlobalSexAtt"></canvas></div>
-                            <p class="text-[9px] text-center text-slate-400 mt-2 italic">Segmentación Global Atención Percibida</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- 3. REPORTES INDIVIDUALES POR AULA -->
-                <div class="space-y-6">
-                    <h2 class="text-sm font-black text-slate-400 uppercase tracking-[0.2em] text-center italic">3. Informes Detallados por Aula</h2>
-                    <div id="dynamicGroupReportsContainer" class="space-y-12"></div>
-                </div>
+                <section class="bg-white rounded-2xl shadow-lg border-t-8 border-gray-600 overflow-hidden">
+                    <div class="p-4 bg-gray-50 border-b flex justify-between items-center">
+                        <h2 class="font-black text-gray-900 text-sm uppercase tracking-widest">3. Experiencia Previa en Mindfulness</h2>
+                        <span id="expCountBadge" class="bg-white px-3 py-1 rounded-full text-[10px] font-bold text-gray-600 shadow-sm">0 respuestas</span>
+                    </div>
+                    <div id="experienceDetails" class="p-6"></div>
+                </section>
 
-                <!-- 4. VALORACIÓN CUALITATIVA -->
                 <section class="bg-white rounded-2xl shadow-lg border-t-8 border-emerald-500 overflow-hidden">
                     <div class="p-4 bg-emerald-50 border-b flex justify-between items-center">
-                        <h2 class="font-black text-emerald-900 text-sm uppercase">Satisfacción (Muestra Experimental)</h2>
+                        <h2 class="font-black text-emerald-900 text-sm uppercase tracking-widest">4. Satisfacción Cualitativa</h2>
                         <span id="valCount" class="bg-white px-3 py-1 rounded-full text-[10px] font-bold text-emerald-600 shadow-sm">0 respuestas</span>
                     </div>
                     <div id="satisfactionDetails" class="p-6"></div>
                 </section>
 
-                <!-- 5. TABLAS DE DATOS -->
+                <div class="space-y-6">
+                    <h2 class="text-sm font-black text-slate-400 uppercase tracking-[0.2em] text-center italic">5. Informes Detallados por Aula</h2>
+                    <div id="dynamicGroupReportsContainer" class="space-y-12"></div>
+                </div>
+
                 <div id="dynamicTablesContainer" class="space-y-12"></div>
 
-                <!-- 6. OBSERVACIONES -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pb-20">
                     <section class="bg-white rounded-2xl shadow-lg border-t-8 border-amber-400 flex flex-col">
-                        <div class="p-4 border-b font-black text-amber-900 text-xs">📝 OBSERVACIONES PRE</div>
-                        <div id="obsContainerPre" class="p-4 space-y-3 max-h-80 overflow-y-auto text-xs"></div>
+                        <div class="p-4 border-b font-black text-amber-900 text-xs text-center uppercase tracking-widest">📝 Observaciones PRE</div>
+                        <div id="obsContainerPre" class="p-4 space-y-3 max-h-80 overflow-y-auto text-xs no-scrollbar"></div>
                     </section>
                     <section class="bg-white rounded-2xl shadow-lg border-t-8 border-emerald-400 flex flex-col">
-                        <div class="p-4 border-b font-black text-emerald-900 text-xs">🏁 OBSERVACIONES POST</div>
-                        <div id="obsContainerPost" class="p-4 space-y-3 max-h-80 overflow-y-auto text-xs"></div>
+                        <div class="p-4 border-b font-black text-emerald-900 text-xs text-center uppercase tracking-widest">🏁 Observaciones POST</div>
+                        <div id="obsContainerPost" class="p-4 space-y-3 max-h-80 overflow-y-auto text-xs no-scrollbar"></div>
                     </section>
                 </div>
             </div>
@@ -183,7 +180,7 @@
     </div>
 
     <script>
-        // --- ESTADO Y CONFIGURACIÓN ---
+        // --- ESTADO GLOBAL ---
         let config = { groups: [{ id: 'g1', name: 'Grupo Experimental', type: 'Experimental' }, { id: 'g2', name: 'Grupo Control', type: 'Control' }] };
         let students = [];
         let currentPhase = 'PRE';
@@ -194,16 +191,16 @@
             loadData(); renderAll();
         });
 
-        // --- GESTIÓN DE GRUPOS ---
+        // --- GESTIÓN GRUPOS ---
         function addNewGroup() { const id = 'g' + Date.now(); config.groups.push({ id, name: 'Nuevo Grupo', type: 'Experimental' }); saveData(); renderAll(); }
         function deleteGroup(id) { if (config.groups.length <= 1) return; if (confirm("¿Borrar grupo?")) { config.groups = config.groups.filter(g => g.id !== id); saveData(); renderAll(); } }
         function updateGroup(id) { const el = document.querySelector(`[data-group-id="${id}"]`); const name = el.querySelector('.gn-input').value; const type = el.querySelector('.gt-select').value; const g = config.groups.find(x => x.id === id); if (g) { g.name = name; g.type = type; saveData(); renderAll(); } }
 
-        // --- LÓGICA DE DATOS ---
+        // --- DATOS ---
         function saveDataEntry() {
             const code = document.getElementById('codigo').value.toUpperCase().trim();
             const groupId = document.getElementById('inputGrupo').value;
-            if (!code) return showMsg("Código requerido", "text-red-500");
+            if (!code) return showMsg("Falta código", "text-red-500");
             const rawAns = Array.from({length:10}, (_,i) => parseInt(document.getElementById('a'+(i+1)).value) || 0);
             const rawAtt = Array.from({length:5}, (_,i) => parseInt(document.getElementById('at'+(i+1)).value) || 0);
             const calc = (vals, invIdx, maxVal) => {
@@ -228,28 +225,19 @@
         }
 
         // --- RENDERIZADO DOM ---
-        function renderAll() { 
-            renderGroups(); 
-            renderInputSelect(); 
-            renderTables(); 
-            renderObservations(); 
-            renderSatisfaction(); 
-            renderDynamicGroupReports(); 
-            initCharts(); 
-            updateChartsData(); 
-        }
+        function renderAll() { renderGroups(); renderInputSelect(); renderTables(); renderObservations(); renderExperience(); renderSatisfaction(); renderDynamicGroupReports(); initCharts(); updateChartsData(); }
 
         function renderGroups() {
             const list = document.getElementById('groupList');
             list.innerHTML = config.groups.map(g => `
-                <div class="group-card flex items-center gap-2 p-2 bg-slate-50 rounded-xl border border-slate-100" data-group-id="${g.id}">
-                    <input type="text" value="${g.name}" class="gn-input flex-1 bg-transparent font-bold text-[11px] outline-none focus:text-blue-600">
-                    <select class="gt-select text-[10px] bg-white border rounded font-bold px-1">
+                <div class="group-card flex items-center gap-2 p-1.5 bg-slate-50 rounded-lg border border-slate-100" data-group-id="${g.id}">
+                    <input type="text" value="${g.name}" class="gn-input flex-1 bg-transparent font-bold text-[10px] outline-none focus:text-blue-600">
+                    <select class="gt-select text-[9px] bg-white border rounded font-black px-1">
                         <option value="Experimental" ${g.type === 'Experimental' ? 'selected' : ''}>EXP</option>
                         <option value="Control" ${g.type === 'Control' ? 'selected' : ''}>CTRL</option>
                     </select>
-                    <button onclick="updateGroup('${g.id}')" class="text-blue-500 hover:bg-blue-50 p-1 rounded-lg">💾</button>
-                    <button onclick="deleteGroup('${g.id}')" class="text-slate-300 hover:text-red-500 p-1 rounded-lg">✕</button>
+                    <button onclick="updateGroup('${g.id}')" class="text-blue-500 hover:bg-white p-1 rounded">💾</button>
+                    <button onclick="deleteGroup('${g.id}')" class="text-slate-300 hover:text-red-500 p-1 rounded">✕</button>
                 </div>`).join('');
         }
 
@@ -282,6 +270,70 @@
             Array.from(container.children).forEach(c => { if (!config.groups.find(g => g.id === c.id.replace('report-row-',''))) c.remove(); });
         }
 
+        function renderExperience() {
+            const container = document.getElementById('experienceDetails');
+            const validStudents = students.filter(s => s.pre && s.pre.exp);
+            
+            document.getElementById('expCountBadge').innerText = `${validStudents.length} respuestas`;
+
+            if (validStudents.length === 0) {
+                container.innerHTML = '<p class="text-center text-slate-400 italic text-xs py-10">Esperando datos del pre-test...</p>';
+                return;
+            }
+
+            let totalSi = 0, totalNo = 0;
+            let freq = { Pocas: 0, 'A veces': 0, Habitual: 0 };
+            let lugares = [];
+
+            validStudents.forEach(s => {
+                const e = s.pre.exp;
+                if (e.si === 'Si') {
+                    totalSi++;
+                    if (e.freq && freq[e.freq] !== undefined) freq[e.freq]++;
+                    if (e.donde && e.donde.trim() !== '') lugares.push(`<b>${s.codigo}:</b> ${e.donde}`);
+                } else if (e.si === 'No') {
+                    totalNo++;
+                }
+            });
+
+            const renderBar = (label, count, total, color) => {
+                const pct = total > 0 ? ((count / total) * 100).toFixed(0) : 0;
+                return `
+                    <div class="flex items-center gap-4 text-xs mb-1">
+                        <div class="w-24 font-bold text-slate-600">${label}</div>
+                        <div class="flex-1 stat-bar"><div class="stat-fill ${color}" style="width: ${pct}%"></div></div>
+                        <div class="w-12 text-right font-black text-slate-900">${pct}%</div>
+                        <div class="w-8 text-[10px] text-slate-400 italic">(${count})</div>
+                    </div>
+                `;
+            };
+
+            const lugaresHtml = lugares.length > 0 
+                ? lugares.map(l => `<div class="p-2 bg-gray-50 rounded mb-1 text-[11px] border-l-2 border-blue-400 shadow-sm">${l}</div>`).join('')
+                : '<p class="text-[10px] text-gray-400 italic">No se han registrado lugares de práctica.</p>';
+
+            container.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <div class="space-y-4">
+                        <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b pb-2">Práctica Previa (Toda la muestra)</h4>
+                        ${renderBar('Sí', totalSi, validStudents.length, 'bg-blue-600')}
+                        ${renderBar('No', totalNo, validStudents.length, 'bg-gray-400')}
+                        
+                        <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b pb-2 mt-8">Frecuencia (de los que practican)</h4>
+                        ${renderBar('Habitualmente', freq.Habitual, totalSi, 'bg-emerald-500')}
+                        ${renderBar('A veces', freq['A veces'], totalSi, 'bg-amber-400')}
+                        ${renderBar('Pocas veces', freq.Pocas, totalSi, 'bg-rose-400')}
+                    </div>
+                    <div class="space-y-4">
+                        <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b pb-2">Lugares / Medios reportados</h4>
+                        <div class="max-h-48 overflow-y-auto pr-2 space-y-1 no-scrollbar">
+                            ${lugaresHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
         function renderSatisfaction() {
             const container = document.getElementById('satisfactionDetails');
             const expStudents = students.filter(s => {
@@ -298,7 +350,7 @@
 
             const stats = {
                 ayuda: { Si: 0, Poco: 0, No: 0 },
-                foco: { Si: 0, Poco: 0, No: 0 },
+                foco: { Si: 0, No: 0 }, 
                 repetir: { Si: 0, No: 0, Igual: 0 },
                 sentido: [0, 0, 0, 0, 0] 
             };
@@ -309,8 +361,12 @@
             expStudents.forEach(s => {
                 const v = s.post.val;
                 if (stats.ayuda[v.ayuda] !== undefined) stats.ayuda[v.ayuda]++;
-                if (stats.foco[v.foco] !== undefined) stats.foco[v.foco]++;
+                
+                if (v.foco === 'Si') stats.foco.Si++;
+                if (v.foco === 'No' || v.foco === 'Poco') stats.foco.No++; 
+
                 if (stats.repetir[v.repetir] !== undefined) stats.repetir[v.repetir]++;
+                
                 if (v.sentido >= 1 && v.sentido <= 5) {
                     stats.sentido[v.sentido - 1]++;
                     sentidoSum += v.sentido;
@@ -323,7 +379,7 @@
             const renderBar = (label, count, total, color) => {
                 const pct = total > 0 ? ((count / total) * 100).toFixed(0) : 0;
                 return `
-                    <div class="flex items-center gap-4 text-xs">
+                    <div class="flex items-center gap-4 text-xs mb-1">
                         <div class="w-24 font-bold text-slate-600">${label}</div>
                         <div class="flex-1 stat-bar"><div class="stat-fill ${color}" style="width: ${pct}%"></div></div>
                         <div class="w-12 text-right font-black text-slate-900">${pct}%</div>
@@ -343,8 +399,7 @@
                     <div class="space-y-4">
                         <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b pb-2">¿Notas más concentración?</h4>
                         ${renderBar('Sí', stats.foco.Si, expStudents.length, 'bg-blue-500')}
-                        ${renderBar('Un poco', stats.foco.Poco, expStudents.length, 'bg-indigo-300')}
-                        ${renderBar('Igual', stats.foco.No, expStudents.length, 'bg-slate-300')}
+                        ${renderBar('Igual / No', stats.foco.No, expStudents.length, 'bg-slate-300')}
                     </div>
                     <div class="space-y-4">
                         <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b pb-2">¿Repetirías en el futuro?</h4>
@@ -371,16 +426,7 @@
             const cont = document.getElementById('dynamicTablesContainer'); cont.innerHTML = '';
             config.groups.forEach(g => {
                 const groupS = students.filter(s => s.groupId === g.id);
-                cont.innerHTML += `
-                    <div class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
-                        <div class="p-4 bg-slate-50 border-b flex justify-between items-center"><h3 class="font-black text-slate-800 text-[10px] uppercase">${g.name}</h3></div>
-                        <div class="table-container">
-                            <table>
-                                <thead><tr><th class="text-left">ID</th><th class="text-center">Ans(Pre)</th><th class="text-center">Ans(Post)</th><th class="text-center">Atn(Pre)</th><th class="text-center">Atn(Post)</th><th class="text-right">ACC</th></tr></thead>
-                                <tbody>${groupS.slice().reverse().map(s => `<tr><td class="font-mono font-black text-slate-800">${s.codigo}</td><td class="text-center text-slate-400">${s.pre?.ans.toFixed(2)||'-'}</td><td class="text-center font-black ${s.post?.ans < s.pre?.ans ? 'text-green-600 bg-green-50' : ''}">${s.post?.ans.toFixed(2)||'-'}</td><td class="text-center text-slate-400">${s.pre?.att.toFixed(2)||'-'}</td><td class="text-center font-black ${s.post?.att > s.pre?.att ? 'text-green-600 bg-green-50' : ''}">${s.post?.att.toFixed(2)||'-'}</td><td class="text-right space-x-1"><button onclick="editStudent('${s.codigo}')" class="text-blue-500 hover:bg-blue-100 p-1 rounded">✎</button><button onclick="deleteStudent('${s.codigo}')" class="text-slate-300 hover:text-red-500 p-1 rounded">✕</button></td></tr>`).join('')}</tbody>
-                            </table>
-                        </div>
-                    </div>`;
+                cont.innerHTML += `<div class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden"><div class="p-4 bg-slate-50 border-b font-black text-slate-800 text-[10px] uppercase">${g.name}</div><div class="table-container"><table><thead><tr><th class="text-left">ID</th><th class="text-center">Ans(Pre)</th><th class="text-center">Ans(Post)</th><th class="text-center">Atn(Pre)</th><th class="text-center">Atn(Post)</th><th class="text-right">ACC</th></tr></thead><tbody>${groupS.slice().reverse().map(s => `<tr><td class="font-mono font-black">${s.codigo}</td><td class="text-center text-slate-400">${s.pre?.ans.toFixed(2)||'-'}</td><td class="text-center font-black ${s.post?.ans < s.pre?.ans ? 'text-green-600 bg-green-50' : ''}">${s.post?.ans.toFixed(2)||'-'}</td><td class="text-center text-slate-400">${s.pre?.att.toFixed(2)||'-'}</td><td class="text-center font-black ${s.post?.att > s.pre?.att ? 'text-green-600 bg-green-50' : ''}">${s.post?.att.toFixed(2)||'-'}</td><td class="text-right"><button onclick="editStudent('${s.codigo}')" class="text-blue-500 p-1">✎</button><button onclick="deleteStudent('${s.codigo}')" class="text-slate-300 p-1">✕</button></td></tr>`).join('')}</tbody></table></div></div>`;
             });
         }
 
@@ -388,31 +434,27 @@
             const pre = document.getElementById('obsContainerPre'); const post = document.getElementById('obsContainerPost'); pre.innerHTML = ''; post.innerHTML = '';
             students.forEach(s => {
                 const g = config.groups.find(x => x.id === s.groupId)?.name || 'N/A';
-                if (s.pre?.obs) pre.innerHTML += `<div class="p-3 bg-amber-50 rounded-xl border border-amber-100 shadow-sm"><span class="font-black text-amber-800">${s.codigo} (${g}):</span> <p class="mt-1 italic text-slate-700">"${s.pre.obs}"</p></div>`;
-                if (s.post?.obs) post.innerHTML += `<div class="p-3 bg-emerald-50 rounded-xl border border-emerald-100 shadow-sm"><span class="font-black text-emerald-800">${s.codigo} (${g}):</span> <p class="mt-1 italic text-slate-700">"${s.post.obs}"</p></div>`;
+                if (s.pre?.obs) pre.innerHTML += `<div class="p-3 bg-amber-50 rounded-xl border border-amber-100 shadow-sm"><span class="font-black text-amber-800 text-[10px]">${s.codigo} (${g})</span> <p class="mt-1 italic text-slate-700">"${s.pre.obs}"</p></div>`;
+                if (s.post?.obs) post.innerHTML += `<div class="p-3 bg-emerald-50 rounded-xl border border-emerald-100 shadow-sm"><span class="font-black text-emerald-800 text-[10px]">${s.codigo} (${g})</span> <p class="mt-1 italic text-slate-700">"${s.post.obs}"</p></div>`;
             });
         }
 
-        // --- GRÁFICAS: INICIALIZACIÓN Y DATOS ---
+        // --- GRÁFICAS ---
         function initCharts() {
             const cfg = (t, c1, c2, maxVal) => ({ type: 'bar', data: { labels: [], datasets: [{ label: 'Pre', data: [], backgroundColor: c1 }, { label: 'Post', data: [], backgroundColor: c2 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: t, font: { weight: 'bold', size: 12 } }, datalabels: { anchor: 'end', align: 'top', font: { weight: 'bold', size: 9 }, formatter: v => v > 0 ? v.toFixed(1) : '' } }, scales: { y: { beginAtZero: true, max: maxVal } } } });
-
             const safe = (id, config, store, key) => { const el = document.getElementById(id); if (!el) return; if (store[key]) store[key].destroy(); store[key] = new Chart(el, config); };
 
-            // 1. Globales Totales
             safe('chartGlobalAnsiedad', cfg('ANSIEDAD GLOBAL', '#fda4af', '#e11d48', 40), charts.fixed, 'gAns');
             safe('chartGlobalAtencion', cfg('ATENCIÓN GLOBAL', '#93c5fd', '#2563eb', 25), charts.fixed, 'gAtt');
 
-            // 2. Globales por Sexo y Condición (LO NUEVO)
-            const gSexAnsCfg = cfg('ANSIEDAD POR SEXO Y CONDICIÓN', '#cbd5e1', '#f43f5e', 40);
+            const gSexAnsCfg = cfg('ANSIEDAD POR SEXO', '#cbd5e1', '#f43f5e', 40);
             gSexAnsCfg.data.labels = ['Chicos (Exp)', 'Chicos (Ctrl)', 'Chicas (Exp)', 'Chicas (Ctrl)'];
             safe('chartGlobalSexAns', gSexAnsCfg, charts.fixed, 'gsAns');
 
-            const gSexAttCfg = cfg('ATENCIÓN POR SEXO Y CONDICIÓN', '#cbd5e1', '#3b82f6', 25);
+            const gSexAttCfg = cfg('ATENCIÓN POR SEXO', '#cbd5e1', '#3b82f6', 25);
             gSexAttCfg.data.labels = ['Chicos (Exp)', 'Chicos (Ctrl)', 'Chicas (Exp)', 'Chicas (Ctrl)'];
             safe('chartGlobalSexAtt', gSexAttCfg, charts.fixed, 'gsAtt');
 
-            // 3. Reportes de Aula
             config.groups.forEach(g => {
                 if (!charts.groups[g.id]) charts.groups[g.id] = {};
                 safe(`chartGrpSum-${g.id}`, cfg('PROGRESO GRUPO', '#94a3b8', '#3b82f6', 40), charts.groups[g.id], 'sum');
@@ -422,36 +464,15 @@
         }
 
         function updateChartsData() {
-            const getAvg = (cond, sex, phase, key) => {
-                const valid = students.filter(s => {
-                    const g = config.groups.find(x => x.id === s.groupId);
-                    const condMatch = cond ? g?.type === cond : true;
-                    const sexMatch = sex ? s.sexo === sex : true;
-                    return condMatch && sexMatch && s[phase]?.[key] > 0;
-                });
-                return valid.length ? valid.reduce((a, b) => a + b[phase][key], 0) / valid.length : 0;
-            };
-
+            const getAvg = (cond, sex, phase, key) => { const valid = students.filter(s => { const g = config.groups.find(x => x.id === s.groupId); const condMatch = cond ? g?.type === cond : true; const sexMatch = sex ? s.sexo === sex : true; return condMatch && sexMatch && s[phase]?.[key] > 0; }); return valid.length ? valid.reduce((a, b) => a + b[phase][key], 0) / valid.length : 0; };
             const getAvgGrp = (gid, phase, key) => { const v = students.filter(s => s.groupId === gid && s[phase]?.[key] > 0); return v.length ? v.reduce((a, b) => a + b[phase][key], 0) / v.length : 0; };
             const getAvgGrpSex = (gid, sex, phase, key) => { const v = students.filter(s => s.groupId === gid && s.sexo === sex && s[phase]?.[key] > 0); return v.length ? v.reduce((a, b) => a + b[phase][key], 0) / v.length : 0; };
 
-            // Globales Totales
             if (charts.fixed.gAns) { charts.fixed.gAns.data.labels = ['Muestra Experimental', 'Muestra Control']; charts.fixed.gAns.data.datasets[0].data = [getAvg('Experimental',null,'pre','ans'), getAvg('Control',null,'pre','ans')]; charts.fixed.gAns.data.datasets[1].data = [getAvg('Experimental',null,'post','ans'), getAvg('Control',null,'post','ans')]; charts.fixed.gAns.update(); }
             if (charts.fixed.gAtt) { charts.fixed.gAtt.data.labels = ['Muestra Experimental', 'Muestra Control']; charts.fixed.gAtt.data.datasets[0].data = [getAvg('Experimental',null,'pre','att'), getAvg('Control',null,'pre','att')]; charts.fixed.gAtt.data.datasets[1].data = [getAvg('Experimental',null,'post','att'), getAvg('Control',null,'post','att')]; charts.fixed.gAtt.update(); }
+            if (charts.fixed.gsAns) { charts.fixed.gsAns.data.datasets[0].data = [getAvg('Experimental','M','pre','ans'), getAvg('Control','M','pre','ans'), getAvg('Experimental','F','pre','ans'), getAvg('Control','F','pre','ans')]; charts.fixed.gsAns.data.datasets[1].data = [getAvg('Experimental','M','post','ans'), getAvg('Control','M','post','ans'), getAvg('Experimental','F','post','ans'), getAvg('Control','F','post','ans')]; charts.fixed.gsAns.update(); }
+            if (charts.fixed.gsAtt) { charts.fixed.gsAtt.data.datasets[0].data = [getAvg('Experimental','M','pre','att'), getAvg('Control','M','pre','att'), getAvg('Experimental','F','pre','att'), getAvg('Control','F','pre','att')]; charts.fixed.gsAtt.data.datasets[1].data = [getAvg('Experimental','M','post','att'), getAvg('Control','M','post','att'), getAvg('Experimental','F','post','att'), getAvg('Control','F','post','att')]; charts.fixed.gsAtt.update(); }
 
-            // Globales por Sexo y Condición (ACTUALIZAR)
-            if (charts.fixed.gsAns) {
-                charts.fixed.gsAns.data.datasets[0].data = [getAvg('Experimental','M','pre','ans'), getAvg('Control','M','pre','ans'), getAvg('Experimental','F','pre','ans'), getAvg('Control','F','pre','ans')];
-                charts.fixed.gsAns.data.datasets[1].data = [getAvg('Experimental','M','post','ans'), getAvg('Control','M','post','ans'), getAvg('Experimental','F','post','ans'), getAvg('Control','F','post','ans')];
-                charts.fixed.gsAns.update();
-            }
-            if (charts.fixed.gsAtt) {
-                charts.fixed.gsAtt.data.datasets[0].data = [getAvg('Experimental','M','pre','att'), getAvg('Control','M','pre','att'), getAvg('Experimental','F','pre','att'), getAvg('Control','F','pre','att')];
-                charts.fixed.gsAtt.data.datasets[1].data = [getAvg('Experimental','M','post','att'), getAvg('Control','M','post','att'), getAvg('Experimental','F','post','att'), getAvg('Control','F','post','att')];
-                charts.fixed.gsAtt.update();
-            }
-
-            // Individuales
             config.groups.forEach(g => {
                 if (charts.groups[g.id]) {
                     if (charts.groups[g.id].sum) { charts.groups[g.id].sum.data.labels = ['Ansiedad', 'Atención']; charts.groups[g.id].sum.data.datasets[0].data = [getAvgGrp(g.id,'pre','ans'), getAvgGrp(g.id,'pre','att')]; charts.groups[g.id].sum.data.datasets[1].data = [getAvgGrp(g.id,'post','ans'), getAvgGrp(g.id,'post','att')]; charts.groups[g.id].sum.update(); }
@@ -462,21 +483,21 @@
         }
 
         // --- UTILIDADES ---
-        function switchTab(p) { currentPhase = p; document.getElementById('tabPre').className = p === 'PRE' ? 'w-1/2 py-4 font-black tab-active' : 'w-1/2 py-4 font-black tab-inactive'; document.getElementById('tabPost').className = p === 'POST' ? 'w-1/2 py-4 font-black tab-active' : 'w-1/2 py-4 font-black tab-inactive'; document.getElementById('sectionPreExp').classList.toggle('hidden', p !== 'PRE'); document.getElementById('sectionPostVal').classList.toggle('hidden', p !== 'POST'); document.getElementById('btnPhaseText').innerText = p; checkGroupType(); }
+        function switchTab(p) { currentPhase = p; document.getElementById('tabPre').className = p === 'PRE' ? 'w-1/2 py-3 font-black tab-active text-xs' : 'w-1/2 py-3 font-black tab-inactive text-xs'; document.getElementById('tabPost').className = p === 'POST' ? 'w-1/2 py-3 font-black tab-active text-xs' : 'w-1/2 py-3 font-black tab-inactive text-xs'; document.getElementById('sectionPreExp').classList.toggle('hidden', p !== 'PRE'); document.getElementById('sectionPostVal').classList.toggle('hidden', p !== 'POST'); document.getElementById('btnPhaseText').innerText = p; checkGroupType(); }
         function checkGroupType() { const g = config.groups.find(x => x.id === document.getElementById('inputGrupo').value); if (currentPhase === 'POST') document.getElementById('sectionPostVal').classList.toggle('hidden', !g || g.type !== 'Experimental'); }
         function clearForm() { document.getElementById('codigo').value = ''; document.querySelectorAll('input[type="number"]').forEach(i => i.value = ''); document.getElementById('observaciones').value = ''; }
         function checkExistingStudent() { const s = students.find(x => x.codigo === document.getElementById('codigo').value.toUpperCase().trim()); if (s) { document.getElementById('inputGrupo').value = s.groupId; document.getElementById('sexo').value = s.sexo; checkGroupType(); } }
         function editStudent(code) { const s = students.find(x => x.codigo === code); if (!s) return; document.getElementById('codigo').value = s.codigo; document.getElementById('inputGrupo').value = s.groupId; document.getElementById('sexo').value = s.sexo; const d = currentPhase === 'PRE' ? s.pre : s.post; if (d) { d.rawAns?.forEach((v, i) => document.getElementById('a'+(i+1)).value = v); d.rawAtt?.forEach((v, i) => document.getElementById('at'+(i+1)).value = v); document.getElementById('observaciones').value = d.obs || ''; } checkGroupType(); }
         function deleteStudent(code) { if (confirm(`¿Borrar a ${code}?`)) { students = students.filter(s => s.codigo !== code); saveData(); renderAll(); } }
-        function showMsg(t, c) { const m = document.getElementById('msg'); m.innerText = t; m.className = "text-center text-[11px] font-bold mt-4 h-4 " + c; setTimeout(() => m.innerText = "", 3000); }
-        function saveData() { localStorage.setItem('tfm_students_v50', JSON.stringify(students)); localStorage.setItem('tfm_groups_v50', JSON.stringify(config.groups)); }
-        function loadData() { const s = localStorage.getItem('tfm_students_v50') || localStorage.getItem('tfm_students_v49'); const g = localStorage.getItem('tfm_groups_v50') || localStorage.getItem('tfm_groups_v49'); if (s) students = JSON.parse(s); if (g) config.groups = JSON.parse(g); }
-        function downloadBackup() { const b = new Blob([JSON.stringify({students, groups: config.groups})], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'backup_v50.json'; a.click(); }
+        function showMsg(t, c) { const m = document.getElementById('msg'); m.innerText = t; m.className = "text-center text-[10px] font-bold mt-3 h-3 " + c; setTimeout(() => m.innerText = "", 3000); }
+        function saveData() { localStorage.setItem('tfm_students_v52', JSON.stringify(students)); localStorage.setItem('tfm_groups_v52', JSON.stringify(config.groups)); }
+        function loadData() { const s = localStorage.getItem('tfm_students_v52') || localStorage.getItem('tfm_students_v50'); const g = localStorage.getItem('tfm_groups_v52') || localStorage.getItem('tfm_groups_v50'); if (s) students = JSON.parse(s); if (g) config.groups = JSON.parse(g); }
+        function downloadBackup() { const b = new Blob([JSON.stringify({students, groups: config.groups})], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'backup_v52.json'; a.click(); }
         function loadBackupFile(input) { const r = new FileReader(); r.onload = (e) => { const d = JSON.parse(e.target.result); students = d.students; config.groups = d.groups; saveData(); renderAll(); }; r.readAsText(input.files[0]); }
         function exportToCSV() {
             let csv = "\uFEFFCODIGO,GRUPO,TIPO,SEXO,ANS_PRE,ANS_POST,AT_PRE,AT_POST,VAL_AYUDA,VAL_SENTIDO,VAL_FOCO,VAL_REPETIR\n";
             students.forEach(s => { const g = config.groups.find(x => x.id === s.groupId); csv += `"${s.codigo}","${g?.name||'N/A'}","${g?.type||'N/A'}","${s.sexo}",${s.pre?.ans||0},${s.post?.ans||0},${s.pre?.att||0},${s.post?.att||0},"${s.post?.val?.ayuda||''}",${s.post?.val?.sentido||0},"${s.post?.val?.foco||''}", "${s.post?.val?.repetir||''}"\n`; });
-            const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'})); a.download = 'datos_tfm_v50.csv'; a.click();
+            const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'})); a.download = 'datos_tfm.csv'; a.click();
         }
     </script>
 </body>
