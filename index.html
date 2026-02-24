@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analytics Pro - v53 Borrado en Cascada</title>
+    <title>Analytics Pro - v54 Compatibilidad Total</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
@@ -34,7 +34,7 @@
         <header class="bg-white p-6 rounded-2xl shadow-xl mb-8 border-b-4 border-blue-600 flex flex-col md:flex-row justify-between items-center gap-6">
             <div class="text-center md:text-left">
                 <h1 class="text-4xl font-black text-slate-900 tracking-tighter">ANALYTICS <span class="text-blue-600">PRO</span></h1>
-                <p class="text-slate-500 font-medium">v53 - Limpieza Inteligente de Datos (Borrado en Cascada)</p>
+                <p class="text-slate-500 font-medium">v54 - Compatibilidad Total y Motor de Migración de Datos</p>
             </div>
             <div class="flex flex-wrap gap-3 justify-center">
                 <input type="file" id="fileInput" class="hidden" accept=".json" onchange="loadBackupFile(this)">
@@ -210,12 +210,11 @@
         // --- GESTIÓN GRUPOS ---
         function addNewGroup() { const id = 'g' + Date.now(); config.groups.push({ id, name: 'Nuevo Grupo', type: 'Experimental' }); saveData(); renderAll(); }
         
-        // --- MODIFICACIÓN CLAVE: BORRADO EN CASCADA ---
         function deleteGroup(id) { 
             if (config.groups.length <= 1) return; 
             if (confirm("¿Seguro que quieres borrar este grupo? Se eliminarán también todos los alumnos y sus datos asociados.")) { 
                 config.groups = config.groups.filter(g => g.id !== id); 
-                students = students.filter(s => s.groupId !== id); // Esto elimina los datos huérfanos
+                students = students.filter(s => s.groupId !== id); 
                 saveData(); 
                 renderAll(); 
             } 
@@ -518,21 +517,99 @@
             });
         }
 
-        // --- UTILIDADES ---
+        // --- MIGRACIÓN DE DATOS (NUEVO MOTOR) ---
+        function migrateLegacyArray(arr) {
+            return arr.map(s => {
+                // Asignar grupo por nombre o tipo antiguo
+                let targetGroup = config.groups.find(g => g.type === s.grupo || g.name === s.grupo);
+                if (!targetGroup) {
+                    const newId = 'migrated_' + (s.grupo || 'unk');
+                    targetGroup = { id: newId, name: s.grupo || 'Grupo Migrado', type: (s.grupo === 'Control' ? 'Control' : 'Experimental') };
+                    config.groups.push(targetGroup);
+                }
+                s.groupId = targetGroup.id;
+                
+                // Mapear valoraciones antiguas a los nombres nuevos para no perder datos
+                if (s.post && s.post.val) {
+                    if (s.post.val.facil && !s.post.val.foco) s.post.val.foco = s.post.val.facil;
+                    if (s.post.val.futuro && !s.post.val.repetir) s.post.val.repetir = s.post.val.futuro;
+                }
+                return s;
+            });
+        }
+
+        // --- UTILIDADES Y CARGA DE DATOS ---
         function switchTab(p) { currentPhase = p; document.getElementById('tabPre').className = p === 'PRE' ? 'w-1/2 py-3 font-black tab-active text-xs' : 'w-1/2 py-3 font-black tab-inactive text-xs'; document.getElementById('tabPost').className = p === 'POST' ? 'w-1/2 py-3 font-black tab-active text-xs' : 'w-1/2 py-3 font-black tab-inactive text-xs'; document.getElementById('sectionPreExp').classList.toggle('hidden', p !== 'PRE'); document.getElementById('sectionPostVal').classList.toggle('hidden', p !== 'POST'); document.getElementById('btnPhaseText').innerText = p; checkGroupType(); }
         function checkGroupType() { const g = config.groups.find(x => x.id === document.getElementById('inputGrupo').value); if (currentPhase === 'POST') document.getElementById('sectionPostVal').classList.toggle('hidden', !g || g.type !== 'Experimental'); }
         function clearForm() { document.getElementById('codigo').value = ''; document.querySelectorAll('input[type="number"]').forEach(i => i.value = ''); document.getElementById('observaciones').value = ''; }
         function checkExistingStudent() { const s = students.find(x => x.codigo === document.getElementById('codigo').value.toUpperCase().trim()); if (s) { document.getElementById('inputGrupo').value = s.groupId; document.getElementById('sexo').value = s.sexo; checkGroupType(); } }
         function editStudent(code) { const s = students.find(x => x.codigo === code); if (!s) return; document.getElementById('codigo').value = s.codigo; document.getElementById('inputGrupo').value = s.groupId; document.getElementById('sexo').value = s.sexo; const d = currentPhase === 'PRE' ? s.pre : s.post; if (d) { d.rawAns?.forEach((v, i) => document.getElementById('a'+(i+1)).value = v); d.rawAtt?.forEach((v, i) => document.getElementById('at'+(i+1)).value = v); document.getElementById('observaciones').value = d.obs || ''; } checkGroupType(); }
         function showMsg(t, c) { const m = document.getElementById('msg'); m.innerText = t; m.className = "text-center text-[10px] font-bold mt-3 h-3 " + c; setTimeout(() => m.innerText = "", 3000); }
-        function saveData() { localStorage.setItem('tfm_students_v53', JSON.stringify(students)); localStorage.setItem('tfm_groups_v53', JSON.stringify(config.groups)); }
-        function loadData() { const s = localStorage.getItem('tfm_students_v53') || localStorage.getItem('tfm_students_v52'); const g = localStorage.getItem('tfm_groups_v53') || localStorage.getItem('tfm_groups_v52'); if (s) students = JSON.parse(s); if (g) config.groups = JSON.parse(g); }
-        function downloadBackup() { const b = new Blob([JSON.stringify({students, groups: config.groups})], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'backup_v53.json'; a.click(); }
-        function loadBackupFile(input) { const r = new FileReader(); r.onload = (e) => { const d = JSON.parse(e.target.result); students = d.students; config.groups = d.groups; saveData(); renderAll(); }; r.readAsText(input.files[0]); }
+        
+        function saveData() { localStorage.setItem('tfm_students_v54', JSON.stringify(students)); localStorage.setItem('tfm_groups_v54', JSON.stringify(config.groups)); }
+        
+        function loadData() { 
+            let sStr = null;
+            let gStr = null;
+            
+            // Buscar la versión más moderna desde la 54 hacia abajo
+            for(let i=54; i>=33; i--) {
+                sStr = localStorage.getItem(`tfm_students_v${i}`);
+                gStr = localStorage.getItem(`tfm_groups_v${i}`);
+                if(sStr) break;
+            }
+            
+            if (sStr) {
+                // Formato moderno
+                students = JSON.parse(sStr);
+                if (gStr) config.groups = JSON.parse(gStr);
+            } else {
+                // Buscar formatos antiguos (Legacy, versión <= 32)
+                let legacyStr = null;
+                for(let i=32; i>=1; i--) {
+                    legacyStr = localStorage.getItem(`tfm_v${i}`) || localStorage.getItem(`tfm_students_v${i}`);
+                    if(legacyStr) break;
+                }
+                // Fallback por si la nomenclatura fallaba
+                if(!legacyStr) legacyStr = localStorage.getItem('tfm_v32'); 
+                
+                if (legacyStr) {
+                    console.log("Migrando datos locales antiguos de versiones anteriores a la v33...");
+                    const legacyStudents = JSON.parse(legacyStr);
+                    students = migrateLegacyArray(legacyStudents);
+                }
+            }
+        }
+        
+        function downloadBackup() { const b = new Blob([JSON.stringify({students, groups: config.groups})], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'backup_v54.json'; a.click(); }
+        
+        function loadBackupFile(input) { 
+            const r = new FileReader(); 
+            r.onload = (e) => { 
+                try {
+                    const d = JSON.parse(e.target.result); 
+                    if (Array.isArray(d)) {
+                        // Archivo legacy (v32 o inferior)
+                        students = migrateLegacyArray(d);
+                        alert("¡Datos antiguos migrados con éxito a la versión 54!");
+                    } else {
+                        // Archivo moderno
+                        students = d.students || []; 
+                        if (d.groups && d.groups.length > 0) config.groups = d.groups; 
+                    }
+                    saveData(); 
+                    renderAll(); 
+                } catch(err) {
+                    alert("Error al procesar el archivo de backup. Verifica que es un JSON válido.");
+                }
+            }; 
+            r.readAsText(input.files[0]); 
+        }
+        
         function exportToCSV() {
             let csv = "\uFEFFCODIGO,GRUPO,TIPO,SEXO,ANS_PRE,ANS_POST,AT_PRE,AT_POST,VAL_AYUDA,VAL_SENTIDO,VAL_FOCO,VAL_REPETIR\n";
             students.forEach(s => { const g = config.groups.find(x => x.id === s.groupId); csv += `"${s.codigo}","${g?.name||'N/A'}","${g?.type||'N/A'}","${s.sexo}",${s.pre?.ans||0},${s.post?.ans||0},${s.pre?.att||0},${s.post?.att||0},"${s.post?.val?.ayuda||''}",${s.post?.val?.sentido||0},"${s.post?.val?.foco||''}", "${s.post?.val?.repetir||''}"\n`; });
-            const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'})); a.download = 'datos_tfm.csv'; a.click();
+            const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'})); a.download = 'datos_tfm_v54.csv'; a.click();
         }
     </script>
 </body>
